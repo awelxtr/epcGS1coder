@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.sgtin;
 
-import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -22,6 +22,29 @@ public class Sgtin198 {
 	private byte partition;
 	private SgtinFilter filter;
 	private int companyPrefix;
-	private BigInteger serial; 
-	
+	private String serial;
+
+	private String uri = null;
+
+	private String getUriSerialChar(String ch){
+		return getUriSerialChar(ch.charAt(0));
+	}
+
+	//Table A-1 for the encoding
+	private String getUriSerialChar(char ch){
+		if (ch < 34 || ch > 90)
+			throw new RuntimeException("Wrong char");
+		switch (ch){
+			case '"':
+			case '%':
+			case '&':
+			case '/':
+			case '<':
+			case '>':
+			case '?':
+				return "%"+String.format("%02x",(int) ch).toUpperCase();
+			default:
+				return String.valueOf(ch);
+		}
+	}
 }

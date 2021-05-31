@@ -53,7 +53,6 @@ public class Sgtin96 {
 		this.companyPrefix = companyPrefix;
 		this.itemReference = itemReference;
 		this.serial = serial;
-		this.uri = "urn:epc:id:sgtin:"+String.valueOf(companyPrefix)+"."+String.valueOf(itemReference)+"."+String.valueOf(serial);
 	}
 
 	public String getEpc() {
@@ -98,7 +97,13 @@ public class Sgtin96 {
 		return serial;
 	}
 
+	public String getPureUri(){
+		return "urn:epc:id:sgtin:"+String.valueOf(companyPrefix)+"."+String.valueOf(itemReference)+"."+String.valueOf(serial);
+	}
+
 	public String getUri(){
+		if (uri == null)
+			uri = "urn:epc:tag:sgtin-96:"+String.valueOf(companyPrefix)+"."+String.valueOf(itemReference)+"."+String.valueOf(serial);
 		return uri;
 	}
 	void setUri(String uri){
