@@ -1,15 +1,19 @@
 package org.java.epcGS1coder.sgtin;
 
+import org.junit.Assert;
 import org.junit.Test;
-
-import java.math.BigInteger;
 
 public class Sgtin198Test {
 
     @Test
     public void firstTest(){
         String epc = "3634007D00011C7A68D3CE4F383532F3E8000000000000000000";
-        BigInteger serial = BigInteger.ZERO;
-        String uri = "urn:epc:tag:sgtin-198:1.0008000.001137.thisIsATest";
+        Sgtin198 sgtin198 = SgtinBuilder.sgtin198FromEpc(epc);
+        Assert.assertEquals(SgtinFilter.pos_item_1, sgtin198.getFilter());
+        Assert.assertEquals(5, sgtin198.getPartition());
+        Assert.assertEquals(8000, sgtin198.getCompanyPrefix());
+        Assert.assertEquals(1137, sgtin198.getItemReference());
+        Assert.assertEquals("thisIsATest", sgtin198.getSerial());
+        Assert.assertEquals("urn:epc:tag:sgtin-198:1.0008000.001137.thisIsATest", sgtin198.getTagUri());
     }
 }

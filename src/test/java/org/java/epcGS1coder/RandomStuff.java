@@ -2,6 +2,7 @@ package org.java.epcGS1coder;
 
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -51,5 +52,8 @@ public class RandomStuff {
 		
 	}
 
-
+	@Test
+	public void workingWithBigIntegers(){
+		BigInteger bigint;
+	}
 }

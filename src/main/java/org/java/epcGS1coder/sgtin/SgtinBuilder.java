@@ -3,13 +3,15 @@ package org.java.epcGS1coder.sgtin;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.LinkedList;
 
 public class SgtinBuilder {
 
     private static final byte sgtin96EpcHeader = 0b00110000;
+    private static final byte sgtin198EpcHeader = 0b00110110;
     private static final String sgtin96UriHeader = "urn:epc:tag:sgtin-96:";
-    private static final byte serialSize = 38;
+    private static final String sgtin198UriHeader = "urn:epc:tag:sgtin-198:";
+    private static final byte sgtin96SerialSize = 38;
+    private static final byte sgtin198SerialSize = (byte) 140;
 
     public static Sgtin96 fromFields(int filter,
                                      byte partition,
@@ -26,17 +28,16 @@ public class SgtinBuilder {
                                      long serial){
         Sgtin96 sgtin96= new Sgtin96(filter,partition,companyPrefix,itemReference,serial);
         sgtin96.setEpc(encode(sgtin96));
-        sgtin96.setUri(encodeUri(sgtin96));
         return sgtin96;
     }
 
-    public static Sgtin96 fromEpc(String epc){
+    public static Sgtin96 sgtin96FromEpc(String epc){
         ArrayList<String> a = new ArrayList<String>();
         for (int i = 0; i<epc.length(); i+=2) {
             a.add(epc.substring(i, i+2));
         }
 
-        ByteBuffer bb = ByteBuffer.allocate(12);
+        ByteBuffer bb = ByteBuffer.allocate(96/8);
         for (int i = a.size() - 1; i>=0;i--)
             bb.put((byte) Integer.parseInt(a.get(i),16));
         bb.rewind();
@@ -70,14 +71,66 @@ public class SgtinBuilder {
         int itemReference = (int) tmp;
 
         //for the remainder, which is the serial, we can use fixed values
-        for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
+        for(tmp = 0, i = sgtin96SerialSize; (i = bs.previousSetBit(i-1)) > -1;)
             tmp+=1<<i;
         long serial = tmp;
 
         Sgtin96 sgtin96 = new Sgtin96(filter,partition,companyPrefix,itemReference,serial);
         sgtin96.setEpc(bs);
-        sgtin96.setUri(encodeUri(sgtin96));
         return sgtin96;
+    }
+
+    public static Sgtin198 sgtin198FromEpc(String epc){
+        ArrayList<String> a = new ArrayList<String>();
+        for (int i = 0; i<epc.length(); i+=2) {
+            a.add(epc.substring(i, i+2));
+        }
+
+        ByteBuffer bb = ByteBuffer.allocate(26);
+        for (int i = a.size() - 1; i>=0;i--)
+            bb.put((byte) Integer.parseInt(a.get(i),16));
+        bb.rewind();
+
+        BitSet bs = BitSet.valueOf(bb);
+
+        int i;
+        long tmp;
+
+        for(tmp = 0, i = 208; (i = bs.previousSetBit(i-1)) > 208 - 8 - 1;)
+            tmp+=1<<(i-(208-8));
+        if (tmp != sgtin198EpcHeader)
+            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+
+        for(tmp = 0, i = 208 - 8; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 1;)
+            tmp+=1<<(i-(208-8-3));
+        SgtinFilter filter = SgtinFilter.values()[(int) tmp];
+
+        for(tmp = 0, i = 208 - 8 - 3; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - 1;)
+            tmp+=1<<(i-(208-8-3-3));
+        byte partition = (byte) tmp;
+
+        byte cpb = getCompanyPrefixBits(partition);
+        for(tmp = 0, i = 208 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - 1;)
+            tmp+=1<<(i-(208-8-3-3-cpb));
+        long companyPrefix = tmp;
+
+        byte irb = getItemReferenceBits(partition);
+        for(tmp = 0, i = 208 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - irb - 1;)
+            tmp+=1<<(i-(208-8-3-3-cpb-irb));
+        int itemReference = (int) tmp;
+
+        StringBuilder serialBuilder = new StringBuilder("");
+        byte[] tmpba;
+
+        i =208-58;
+        for(int j = 0;j < 20 && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+            serialBuilder.append(new String(tmpba));
+
+        String serial = serialBuilder.toString();
+
+        Sgtin198 sgtin198 = new Sgtin198(filter,partition,companyPrefix,itemReference,serial);
+        sgtin198.setEpc(bs);
+        return sgtin198;
     }
 
     public static Sgtin96 fromUri(String uri){
@@ -95,14 +148,6 @@ public class SgtinBuilder {
         sgtin96.setUri(uri);
 
         return sgtin96;
-    }
-
-    public static String encodeUri(Sgtin96 sgtin96){
-        return sgtin96UriHeader +
-                String.valueOf(sgtin96.getFilter().getValue()) + "." +
-                String.format("%0"+String.valueOf(getCompanyPrefixDigits(sgtin96.getPartition()))+"d", sgtin96.getCompanyPrefix()) + "." +
-                String.format("%0"+String.valueOf(1+12-getCompanyPrefixDigits(sgtin96.getPartition()))+"d",sgtin96.getItemReference()) + "." +
-                String.valueOf(sgtin96.getSerial());
     }
 
     /**
@@ -180,7 +225,7 @@ public class SgtinBuilder {
         BitSet epc = new BitSet(8*96); //Sgtin96*8 bits
         int i = 0;
 
-        for (int j = 0; j < serialSize; j++,i++)
+        for (int j = 0; j < sgtin96SerialSize; j++,i++)
             epc.set(i, ((sgtin96.getSerial() >> j) & 1)==1);
 
         for (int j = 0; j < getItemReferenceBits(sgtin96.getPartition()); j++,i++)

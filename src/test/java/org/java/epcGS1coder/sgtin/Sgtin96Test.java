@@ -8,7 +8,7 @@ public class Sgtin96Test {
     @Test
     public void fromEpc(){
         String epc = "3034007D00011C400000000B";
-        Sgtin96 sgtin96 = SgtinBuilder.fromEpc(epc);
+        Sgtin96 sgtin96 = SgtinBuilder.sgtin96FromEpc(epc);
         Assert.assertEquals(sgtin96.getFilter(),SgtinFilter.pos_item_1);
         Assert.assertEquals(sgtin96.getPartition(),5);
         Assert.assertEquals(sgtin96.getCompanyPrefix(),8000);
@@ -19,14 +19,14 @@ public class Sgtin96Test {
     @Test
     public void decodeEncodeEpc(){
         String epc = "3034007d00011c400000000b";
-        Sgtin96 sgtin96 = SgtinBuilder.fromEpc(epc);
+        Sgtin96 sgtin96 = SgtinBuilder.sgtin96FromEpc(epc);
         Assert.assertEquals(epc.toLowerCase(),sgtin96.getEpc().toLowerCase());
     }
 
     @Test
     public void encodeUri(){
         String epc = "3034007d00011c400000000b";
-        Sgtin96 sgtin96 = SgtinBuilder.fromEpc(epc);
+        Sgtin96 sgtin96 = SgtinBuilder.sgtin96FromEpc(epc);
         Assert.assertEquals("urn:epc:tag:sgtin-96:1.0008000.001137.11",sgtin96.getUri());
     }
 
