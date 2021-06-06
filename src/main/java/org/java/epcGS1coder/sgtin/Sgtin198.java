@@ -73,7 +73,7 @@ public class Sgtin198 {
 
 	public String getTagUri() {
 		if (uri == null)
-			uri = "urn:epc:tag:sgtin-198:"+String.valueOf(companyPrefix)+"."+String.valueOf(itemReference)+"."+serial.chars().mapToObj(c -> getUriSerialChar((char) c)).collect(Collectors.joining());
+			uri = "urn:epc:tag:sgtin-198:"+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getItemReferenceDigits(partition)+"d",itemReference)+"."+serial.chars().mapToObj(c -> getUriSerialChar((char) c)).collect(Collectors.joining());
 		return uri;
 	}
 
@@ -103,4 +103,81 @@ public class Sgtin198 {
 		}
 	}
 
+	/**
+	 * Table 14-2 SGTIN Partition Table
+	 * @param partition
+	 * @return M value
+	 */
+	private static byte getCompanyPrefixBits(int partition){
+		switch (partition){
+			case 0:
+				return 40;
+			case 1:
+				return 37;
+			case 2:
+				return 34;
+			case 3:
+				return 30;
+			case 4:
+				return 27;
+			case 5:
+				return 24;
+			case 6:
+				return 20;
+			default:
+				throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+		}
+	}
+
+	/**
+	 * Table 14-2 SGTIN Partition Table
+	 * @param partition
+	 * @return N value
+	 */
+	private static byte getItemReferenceBits(int partition){
+		switch (partition){
+			case 0:
+				return 4;
+			case 1:
+				return 7;
+			case 2:
+				return 10;
+			case 3:
+				return 14;
+			case 4:
+				return 17;
+			case 5:
+				return 20;
+			case 6:
+				return 24;
+			default:
+				throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+		}
+	}
+
+	/**
+	 * Table 14-2 SGTIN Partition Table
+	 * @param companyPrefixDigits (L) value
+	 * @return P value
+	 */
+	private static int getPartition(int companyPrefixDigits){
+		return 12-companyPrefixDigits;
+	}
+
+	/**
+	 * Table 14-2 SGTIN Partition Table
+	 * @param P
+	 * @return L
+	 */
+	private static int getCompanyPrefixDigits(int partition){
+		return 12-partition;
+	}
+
+	/**
+	 * Table 14-2 SGTIN Partition Table
+	 * @param P
+	 */
+	private static int getItemReferenceDigits(int partition){
+		return partition+1;
+	}
 }

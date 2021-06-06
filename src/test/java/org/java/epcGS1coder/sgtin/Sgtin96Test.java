@@ -3,6 +3,9 @@ package org.java.epcGS1coder.sgtin;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.channels.NotYetBoundException;
+import java.util.Locale;
+
 public class Sgtin96Test {
 
     @Test
@@ -31,9 +34,15 @@ public class Sgtin96Test {
     }
 
     @Test
-    public void decodeUri(){
+    public void fromUri(){
         String uri = "urn:epc:tag:sgtin-96:1.0008000.001137.11";
-        Sgtin96 sgtin96 = SgtinBuilder.fromUri(uri);
+        Sgtin96 sgtin96 = SgtinBuilder.sgtin96FromUri(uri);
+        Assert.assertEquals("3034007d00011c400000000b",sgtin96.getEpc().toLowerCase());
+    }
+
+    @Test
+    public void fromFieldsTest(){
+        Sgtin96 sgtin96 = SgtinBuilder.sgtin96FromFields(SgtinFilter.pos_item_1, (byte) 5,8000,1137,11l);
         Assert.assertEquals("3034007d00011c400000000b",sgtin96.getEpc().toLowerCase());
     }
 }

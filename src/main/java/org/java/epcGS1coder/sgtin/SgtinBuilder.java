@@ -13,22 +13,40 @@ public class SgtinBuilder {
     private static final byte sgtin96SerialSize = 38;
     private static final byte sgtin198SerialSize = (byte) 140;
 
-    public static Sgtin96 fromFields(int filter,
-                                     byte partition,
-                                     long companyPrefix,
-                                     int itemReference,
-                                     long serial){
-        return fromFields(SgtinFilter.values()[filter],partition,companyPrefix,itemReference,serial);
+    public static Sgtin96 sgtin96FromFields(int filter,
+                                            byte partition,
+                                            long companyPrefix,
+                                            int itemReference,
+                                            long serial){
+        return sgtin96FromFields(SgtinFilter.values()[filter],partition,companyPrefix,itemReference,serial);
     }
 
-    public static Sgtin96 fromFields(SgtinFilter filter,
-                                     byte partition,
-                                     long companyPrefix,
-                                     int itemReference,
-                                     long serial){
+    public static Sgtin96 sgtin96FromFields(SgtinFilter filter,
+                                            byte partition,
+                                            long companyPrefix,
+                                            int itemReference,
+                                            long serial){
         Sgtin96 sgtin96= new Sgtin96(filter,partition,companyPrefix,itemReference,serial);
         sgtin96.setEpc(encode(sgtin96));
         return sgtin96;
+    }
+
+    public static Sgtin198 sgtin198FromFields(int filter,
+                                            byte partition,
+                                            long companyPrefix,
+                                            int itemReference,
+                                            String serial){
+        return sgtin198FromFields(SgtinFilter.values()[filter],partition,companyPrefix,itemReference,serial);
+    }
+
+    public static Sgtin198 sgtin198FromFields(SgtinFilter filter,
+                                            byte partition,
+                                            long companyPrefix,
+                                            int itemReference,
+                                            String serial){
+        Sgtin198 sgtin198= new Sgtin198(filter,partition,companyPrefix,itemReference,serial);
+//        sgtin198.setEpc(encode(sgtin198));
+        return sgtin198;
     }
 
     public static Sgtin96 sgtin96FromEpc(String epc){
@@ -133,7 +151,30 @@ public class SgtinBuilder {
         return sgtin198;
     }
 
-    public static Sgtin96 fromUri(String uri){
+    public static Sgtin198 sgtin198FromUri(String uri){
+        if (!uri.startsWith(sgtin198UriHeader))
+            throw new RuntimeException("Decoding error: wrong URI header, expected " + sgtin96UriHeader);
+
+        String uriParts[] = uri.substring(sgtin198UriHeader.length()).split("\\.");
+        SgtinFilter filter = SgtinFilter.values()[Integer.parseInt(uriParts[0])];
+        byte partition = (byte) getPartition(uriParts[1].length());
+        long companyPrefix = Long.parseLong(uriParts[1]);
+        int itemReference = Integer.parseInt(uriParts[2]);
+
+        String serial = uriParts[3];
+        StringBuilder sb = new StringBuilder();
+        String[] serialSplit = serial.split("%");
+        sb.append(serialSplit[0]);
+        for (int i = 1; i < serialSplit.length; i++){
+            sb.append((char) Integer.parseInt(serialSplit[i].substring(0,2),16));
+            sb.append(serialSplit[i].substring(2));
+        }
+
+        Sgtin198 sgtin198 = sgtin198FromFields(filter,partition,companyPrefix,itemReference,sb.toString());
+        return sgtin198;
+    }
+
+    public static Sgtin96 sgtin96FromUri(String uri){
         if (!uri.startsWith(sgtin96UriHeader))
             throw new RuntimeException("Decoding error: wrong URI header, expected " + sgtin96UriHeader);
 
@@ -144,7 +185,7 @@ public class SgtinBuilder {
         int itemReference = Integer.parseInt(uriParts[2]);
         long serial = Long.parseLong(uriParts[3]);
 
-        Sgtin96 sgtin96 = fromFields(filter,partition,companyPrefix,itemReference,serial);
+        Sgtin96 sgtin96 = sgtin96FromFields(filter,partition,companyPrefix,itemReference,serial);
         sgtin96.setUri(uri);
 
         return sgtin96;
