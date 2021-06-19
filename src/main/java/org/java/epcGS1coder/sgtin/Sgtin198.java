@@ -47,8 +47,13 @@ public class Sgtin198 {
 		this.serial = serial;
 	}
 
-	public BitSet getEpc() {
-		return epc;
+	public String getEpc() {
+		byte[] epcba = epc.toByteArray();
+		StringBuffer sb = new StringBuffer(epcba.length*2);
+		for (int i = epcba.length-1; i>=0; i--)
+			sb.append(String.format("%02X",epcba[i]));
+
+		return sb.toString();
 	}
 
 	public byte getPartition() {
@@ -108,7 +113,7 @@ public class Sgtin198 {
 	 * @param partition
 	 * @return M value
 	 */
-	private static byte getCompanyPrefixBits(int partition){
+	private byte getCompanyPrefixBits(int partition){
 		switch (partition){
 			case 0:
 				return 40;
@@ -134,7 +139,7 @@ public class Sgtin198 {
 	 * @param partition
 	 * @return N value
 	 */
-	private static byte getItemReferenceBits(int partition){
+	private byte getItemReferenceBits(int partition){
 		switch (partition){
 			case 0:
 				return 4;
@@ -160,7 +165,7 @@ public class Sgtin198 {
 	 * @param companyPrefixDigits (L) value
 	 * @return P value
 	 */
-	private static int getPartition(int companyPrefixDigits){
+	private int getPartition(int companyPrefixDigits){
 		return 12-companyPrefixDigits;
 	}
 
@@ -169,7 +174,7 @@ public class Sgtin198 {
 	 * @param P
 	 * @return L
 	 */
-	private static int getCompanyPrefixDigits(int partition){
+	private int getCompanyPrefixDigits(int partition){
 		return 12-partition;
 	}
 
@@ -177,7 +182,7 @@ public class Sgtin198 {
 	 * Table 14-2 SGTIN Partition Table
 	 * @param P
 	 */
-	private static int getItemReferenceDigits(int partition){
+	private int getItemReferenceDigits(int partition){
 		return partition+1;
 	}
 }

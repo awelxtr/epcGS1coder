@@ -3,9 +3,6 @@ package org.java.epcGS1coder.sgtin;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.channels.NotYetBoundException;
-import java.util.Locale;
-
 public class Sgtin96Test {
 
     @Test

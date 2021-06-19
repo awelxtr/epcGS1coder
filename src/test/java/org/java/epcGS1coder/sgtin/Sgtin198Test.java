@@ -18,7 +18,7 @@ public class Sgtin198Test {
     }
 
     @Test
-    public void fromUriTest(){
+    public void fromUriFieldsTest(){
         String uri = "urn:epc:tag:sgtin-198:1.0008000.001137.thisIs%26Test";
         Sgtin198 sgtin198 = SgtinBuilder.sgtin198FromUri(uri);
         Assert.assertEquals(SgtinFilter.pos_item_1, sgtin198.getFilter());
@@ -26,6 +26,13 @@ public class Sgtin198Test {
         Assert.assertEquals(8000, sgtin198.getCompanyPrefix());
         Assert.assertEquals(1137, sgtin198.getItemReference());
         Assert.assertEquals("thisIs&Test", sgtin198.getSerial());
+    }
+
+    @Test
+    public void fromUriEpcTest(){
+        String uri = "urn:epc:tag:sgtin-198:1.0008000.001137.thisIsATest";
+        Sgtin198 sgtin198 = SgtinBuilder.sgtin198FromUri(uri);
+        Assert.assertEquals("3634007D00011C7A68D3CE4F383532F3E8000000000000000000",sgtin198.getEpc().toUpperCase());
     }
 
     @Test
