@@ -17,6 +17,7 @@ public class Sgtin198 {
 
 	private final byte epcHeader = 0b00110110;
 	private final int serialSize = 140;
+	private final int padding = 10;
 	
 	private BitSet epc;
 	
@@ -48,8 +49,33 @@ public class Sgtin198 {
 	}
 
 	public String getEpc() {
+		if (epc == null){
+			epc = new BitSet(52*4); //Sgtin-198 epc is 52 hex chars long
+			int i = serialSize+padding-1;
+
+			for (byte b : serial.getBytes()) {
+				for (int j = 6; j >= 0; j--,i--)
+					epc.set(i, ((b >> j) & 1) == 1);
+			}
+
+			i = serialSize+padding;
+			for (int j = 0; j < getItemReferenceBits(this.getPartition()); j++,i++)
+				epc.set(i, ((this.getItemReference() >> j) & 1)==1);
+
+			for (int j = 0; j < getCompanyPrefixBits(this.getPartition()); j++,i++)
+				epc.set(i, ((this.getCompanyPrefix() >> j) & 1)==1);
+
+			for (int j = 0; j < 3; j++,i++)
+				epc.set(i, ((this.getPartition() >> j) & 1)==1);
+
+			for (int j = 0; j < 3; j++,i++)
+				epc.set(i, ((this.getFilter().getValue() >> j) & 1)==1);
+
+			for (int j = 0; j < 8; j++,i++)
+				epc.set(i, ((epcHeader >> j) & 1)==1);
+		}
 		byte[] epcba = epc.toByteArray();
-		StringBuffer sb = new StringBuffer(epcba.length*2);
+		StringBuffer sb = new StringBuffer(52);
 		for (int i = epcba.length-1; i>=0; i--)
 			sb.append(String.format("%02X",epcba[i]));
 
