@@ -2,10 +2,7 @@ package org.java.epcGS1coder.sgtin;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * The Serialised Global Trade Item Number EPC scheme is used to assign a unique
@@ -18,13 +15,14 @@ import java.util.stream.IntStream;
  *
  */
 
-public class Sgtin96 {
+public class Sgtin96 extends Sgtin{
 
-	private final byte epcHeader = 0b00110000;
-	private final byte serialSize = 38;
-	private final byte GtinMaxSize = 44;
+	private final static byte epcHeader = 0b00110000;
+	private final static byte serialSize = 38;
+	private final static byte GtinMaxSize = 44;
+	private static final String uriHeader = "urn:epc:tag:sgtin-96:";
 	
-	private BitSet epc;
+	private String epc = null;
 	
 	private SgtinFilter filter;
 	private byte partition;
@@ -36,53 +34,56 @@ public class Sgtin96 {
 	private String uri = null;
 	
 	Sgtin96(int filter,
-			byte partition,
+			int companyPrefixDigits,
 			long companyPrefix,
 			int itemReference,
 			long serial){
-		this(SgtinFilter.values()[filter], partition, companyPrefix, itemReference, serial);
-	}
-
-	Sgtin96(SgtinFilter filter,
-			byte partition,
-			long companyPrefix,
-			int itemReference,
-			long serial){
-		this.filter = filter;
-		this.partition = partition;
+		this.filter = SgtinFilter.values()[filter];
+		this.partition = (byte) getPartition(companyPrefixDigits);
 		this.companyPrefix = companyPrefix;
 		this.itemReference = itemReference;
 		this.serial = serial;
 	}
 
 	public String getEpc() {
-		byte[] epcba = epc.toByteArray();
-		StringBuffer sb = new StringBuffer(epcba.length*2);
-		for (int i = epcba.length-1; i>=0; i--)
-			sb.append(String.format("%02X",epcba[i]));
+		if (epc == null){
+			BitSet epc = new BitSet(8*96); //Sgtin96*8 bits
+			int i = 0;
 
-		return sb.toString();
-	}
-	void setEpc(BitSet epc) { this.epc = epc; }
-	void setEpc(String epc) {
-		ArrayList<String> a = new ArrayList<String>();
-		for (int i = 0; i<epc.length(); i+=2) {
-			a.add(epc.substring(i, i+2));
+			for (int j = 0; j < serialSize; j++,i++)
+				epc.set(i, ((serial >> j) & 1)==1);
+
+			for (int j = 0; j < getItemReferenceBits(partition); j++,i++)
+				epc.set(i, ((itemReference >> j) & 1)==1);
+
+			for (int j = 0; j < getCompanyPrefixBits(partition); j++,i++)
+				epc.set(i, ((companyPrefix >> j) & 1)==1);
+
+			for (int j = 0; j < 3; j++,i++)
+				epc.set(i, ((partition >> j) & 1)==1);
+
+			for (int j = 0; j < 3; j++,i++)
+				epc.set(i, ((filter.getValue() >> j) & 1)==1);
+
+			for (int j = 0; j < 8; j++,i++)
+				epc.set(i, ((epcHeader >> j) & 1)==1);
+
+			byte[] epcba = epc.toByteArray();
+			StringBuffer sb = new StringBuffer(epcba.length*2);
+			for (i = epcba.length-1; i>=0; i--)
+				sb.append(String.format("%02X",epcba[i]));
+
+			this.epc = sb.toString();
 		}
+		return epc;
+	}
 
-		ByteBuffer bb = ByteBuffer.allocate(12);
-		a.stream().map(s -> Integer.parseInt(s, 16)).map(Integer::byteValue).forEach(bb::put);
-		bb.rewind();
-
-		this.epc = BitSet.valueOf(bb);
+	void setEpc(String epc) {
+		this.epc = epc;
 	}
 	
-	public SgtinFilter getFilter() {
-		return filter;
-	}
-
-	public byte getPartition() {
-		return partition;
+	public int getFilter() {
+		return filter.getValue();
 	}
 
 	public long getCompanyPrefix() {
@@ -97,10 +98,6 @@ public class Sgtin96 {
 		return serial;
 	}
 
-	public String getPureUri(){
-		return "urn:epc:id:sgtin:"+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getItemReferenceDigits(partition)+"d",itemReference)+"."+String.valueOf(serial);
-	}
-
 	public String getUri(){
 		if (uri == null)
 			uri = "urn:epc:tag:sgtin-96:"+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getItemReferenceDigits(partition)+"d",itemReference)+"."+String.valueOf(serial);
@@ -110,81 +107,77 @@ public class Sgtin96 {
 		this.uri = uri;
 	};
 
-	/**
-	 * Table 14-2 SGTIN Partition Table
-	 * @param partition
-	 * @return M value
-	 */
-	private byte getCompanyPrefixBits(int partition){
-		switch (partition){
-			case 0:
-				return 40;
-			case 1:
-				return 37;
-			case 2:
-				return 34;
-			case 3:
-				return 30;
-			case 4:
-				return 27;
-			case 5:
-				return 24;
-			case 6:
-				return 20;
-			default:
-				throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+	public static Sgtin96 fromFields(int filter,
+									int companyPrefixDigits,
+									long companyPrefix,
+									int itemReference,
+									long serial){
+		return new Sgtin96(filter, companyPrefixDigits,companyPrefix,itemReference,serial);
+	}
+
+	public static Sgtin96 fromUri(String uri) {
+		if (!uri.startsWith(uriHeader))
+			throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+
+		String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
+		int filter = Integer.parseInt(uriParts[0]);
+		byte partition = (byte) getPartition(uriParts[1].length());
+		long companyPrefix = Long.parseLong(uriParts[1]);
+		int itemReference = Integer.parseInt(uriParts[2]);
+		long serial = Long.parseLong(uriParts[3]);
+
+		Sgtin96 sgtin96 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
+		sgtin96.setUri(uri);
+
+		return sgtin96;
+	}
+
+	public static Sgtin96 fromEpc(String epc) {
+		ArrayList<String> a = new ArrayList<String>();
+		for (int i = 0; i<epc.length(); i+=2) {
+			a.add(epc.substring(i, i+2));
 		}
-	}
 
-	/**
-	 * Table 14-2 SGTIN Partition Table
-	 * @param partition
-	 * @return N value
-	 */
-	private byte getItemReferenceBits(int partition){
-		switch (partition){
-			case 0:
-				return 4;
-			case 1:
-				return 7;
-			case 2:
-				return 10;
-			case 3:
-				return 14;
-			case 4:
-				return 17;
-			case 5:
-				return 20;
-			case 6:
-				return 24;
-			default:
-				throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
-		}
-	}
+		ByteBuffer bb = ByteBuffer.allocate(96/8);
+		for (int i = a.size() - 1; i>=0;i--)
+			bb.put((byte) Integer.parseInt(a.get(i),16));
+		bb.rewind();
 
-	/**
-	 * Table 14-2 SGTIN Partition Table
-	 * @param companyPrefixDigits (L) value
-	 * @return P value
-	 */
-	private int getPartition(int companyPrefixDigits){
-		return 12-companyPrefixDigits;
-	}
+		BitSet bs = BitSet.valueOf(bb);
 
-	/**
-	 * Table 14-2 SGTIN Partition Table
-	 * @param P
-	 * @return L
-	 */
-	private int getCompanyPrefixDigits(int partition){
-		return 12-partition;
-	}
+		int i;
+		long tmp;
 
-	/**
-	 * Table 14-2 SGTIN Partition Table
-	 * @param P
-	 */
-	private int getItemReferenceDigits(int partition){
-		return partition+1;
+		for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
+			tmp+=1L<<(i-(96-8));
+		if (tmp != epcHeader)
+			throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+
+		for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
+			tmp+=1L<<(i-(96-8-3));
+		int filter = (int) tmp;
+
+		for(tmp = 0, i = 96 - 8 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - 1;)
+			tmp+=1L<<(i-(96-8-3-3));
+		byte partition = (byte) tmp;
+
+		byte cpb = getCompanyPrefixBits(partition);
+		for(tmp = 0, i = 96 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - 1;)
+			tmp+=1L<<(i-(96-8-3-3-cpb));
+		long companyPrefix = tmp;
+
+		byte irb = getItemReferenceBits(partition);
+		for(tmp = 0, i = 96 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - irb - 1;)
+			tmp+=1L<<(i-(96-8-3-3-cpb-irb));
+		int itemReference = (int) tmp;
+
+		//for the remainder, which is the serial, we can use fixed values
+		for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
+			tmp+=1L<<i;
+		long serial = tmp;
+
+		Sgtin96 sgtin96 = new Sgtin96(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
+		sgtin96.setEpc(epc);
+		return sgtin96;
 	}
 }

@@ -1,70 +1,152 @@
 package org.java.epcGS1coder.sscc;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.BitSet;
 
 public class Sscc96 {
 
-    private final byte epcHeader = 0b00110001;
-    private final byte serialSize = 24;
-    private final byte GtinMaxSize = 44;
+    private static final byte epcHeader = 0b00110001;
+    private static final byte reservedSize = 24;
+    private static final String tagUriHeader = "urn:epc:tag:sscc-96:";
 
-    private BitSet epc;
+    private String epc;
 
     private SsccFilter filter;
     private byte partition;
 
     private long companyPrefix;
-    private int itemReference;
-    private long serial;
+    private long serialReference;
 
     private String uri = null;
 
     Sscc96(int filter,
-            byte partition,
+            int companyPrefixDigits,
             long companyPrefix,
-            int itemReference,
-            long serial){
-        this(SsccFilter.values()[filter], partition, companyPrefix, itemReference, serial);
-    }
-
-    Sscc96(SsccFilter filter,
-            byte partition,
-            long companyPrefix,
-            int itemReference,
-            long serial){
-        this.filter = filter;
-        this.partition = partition;
+            long serialReference){
+        this.filter = SsccFilter.values()[filter];
+        this.partition = (byte) getPartition(companyPrefixDigits);
         this.companyPrefix = companyPrefix;
-        this.itemReference = itemReference;
-        this.serial = serial;
+        this.serialReference = serialReference;
     }
 
-    public SsccFilter getFilter() {
-        return filter;
+    public static Sscc96 fromFields(int filter,
+                             int companyPrefixDigits,
+                             long companyPrefix,
+                             long serialReference){
+        return new Sscc96(filter, companyPrefixDigits, companyPrefix, serialReference);
     }
 
-    public byte getPartition() {
-        return partition;
+    public static Sscc96 fromEpc(String epc){
+        if (epc.length()<24)
+            throw new RuntimeException("Invalid EPC: shorter than 96 bits");
+
+        ArrayList<String> a = new ArrayList<String>();
+        for (int i = 0; i<epc.length(); i+=2) {
+            a.add(epc.substring(i, i+2));
+        }
+
+        ByteBuffer bb = ByteBuffer.allocate(96/8);
+        for (int i = a.size() - 1; i>=0;i--)
+            bb.put((byte) Integer.parseInt(a.get(i),16));
+        bb.rewind();
+
+        BitSet bs = BitSet.valueOf(bb);
+
+        int i;
+        long tmp;
+
+        for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
+            tmp += 1l << (i - (96 - 8));
+        if (tmp != epcHeader)
+            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+
+        for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
+            tmp += 1l << (i - (96 - 8 - 3));
+        int filter = (int) tmp;
+
+        for(tmp = 0, i = 96 - 8 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - 1;)
+            tmp += 1l << (i - (96 - 8 - 3 - 3));
+        byte partition = (byte) tmp;
+
+        byte cpb = getCompanyPrefixBits(partition);
+        for(tmp = 0, i = 96 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - 1;)
+            tmp += 1l << (i - (96 - 8 - 3 - 3 - cpb));
+        long companyPrefix = tmp;
+
+        byte irb = getSerialReferenceBits(partition);
+        for(tmp = 0, i = 96 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > reservedSize - 1;)
+            tmp += 1l << (i - (96 - 8 - 3 - 3 - cpb - irb));
+        long serialReference = tmp;
+
+        Sscc96 sscc96 = new Sscc96(filter,partition,companyPrefix,serialReference);
+        sscc96.setEpc(epc);
+
+        return sscc96;
+    }
+
+    public static Sscc96 fromUri(String uri){
+        if (!uri.startsWith(tagUriHeader))
+            throw new RuntimeException("Wrong URI");
+        String[] uriParts = uri.split(":");
+        uriParts = uriParts[uriParts.length-1].split("\\.");
+        if ((uriParts[1].length() + uriParts[2].length())<17)
+            throw new RuntimeException("Company prefix and serial reference must have 17 digits in total");
+        int filter = Integer.parseInt(uriParts[0]);
+        byte partition = (byte) getPartition(uriParts[1].length());
+        long companyPrefix = Long.parseLong(uriParts[1]);
+        long serialReference = Long.parseLong(uriParts[2]);
+        return new Sscc96(filter,getCompanyPrefixDigits(partition),companyPrefix,serialReference);
+    }
+
+    public int getFilter() {
+        return filter.getValue();
     }
 
     public long getCompanyPrefix() {
         return companyPrefix;
     }
 
-    public int getItemReference() {
-        return itemReference;
+    public long getSerialReference() {
+        return serialReference;
     }
 
-    public long getSerial() {
-        return serial;
-    }
-
+    void setEpc(String epc){ this.epc = epc; }
     public String getUri() {
-        throw new RuntimeException("NOT_IMPLEMENTED");
+        if (uri == null){
+            uri = tagUriHeader+filter.getValue()+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix)+"."+String.format("%0"+getSerialReferenceDigits(partition)+"d",serialReference);
+        }
+        return uri;
     }
 
     public String getEpc(){
-        throw new RuntimeException("NOT_IMPLEMENTED");
+        if (epc == null ){
+            BitSet epc = new BitSet(8*96); //Sgtin96*8 bits
+            int i = reservedSize;
+
+            for (int j = 0; j < getSerialReferenceBits(partition); j++,i++)
+                epc.set(i, ((serialReference >> j) & 1)==1);
+
+            for (int j = 0; j < getCompanyPrefixBits(partition); j++,i++)
+                epc.set(i, ((companyPrefix >> j) & 1)==1);
+
+            for (int j = 0; j < 3; j++,i++)
+                epc.set(i, ((partition >> j) & 1)==1);
+
+            for (int j = 0; j < 3; j++,i++)
+                epc.set(i, ((filter.getValue() >> j) & 1)==1);
+
+            for (int j = 0; j < 8; j++,i++)
+                epc.set(i, ((epcHeader >> j) & 1)==1);
+
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(epcba.length*2);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+
+            this.epc = sb.toString();
+        }
+        return epc;
     }
 
     /**
@@ -98,7 +180,7 @@ public class Sscc96 {
      * @param partition
      * @return N value
      */
-    private static byte getItemReferenceBits(int partition){
+    private static byte getSerialReferenceBits(int partition){
         switch (partition){
             case 0:
                 return 18;
@@ -141,7 +223,27 @@ public class Sscc96 {
      * Table 14-5 SSCC Partition Table
      * @param P
      */
-    private static int getItemReferenceDigits(int partition){
+    private static int getSerialReferenceDigits(int partition){
         return partition+5;
+    }
+
+    enum SsccFilter {
+        all_others_0(0),
+        reserved_1(1),
+        case_2(2),
+        reserved_3(3),
+        reserved_4(4),
+        reserved_5(5),
+        unit_load_6(6),
+        reserved_7(7);
+
+        private int value;
+
+        SsccFilter(int value) {
+            this.value = value;
+        }
+        public int getValue(){
+            return value;
+        }
     }
 }
