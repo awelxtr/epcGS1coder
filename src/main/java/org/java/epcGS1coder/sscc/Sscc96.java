@@ -1,5 +1,7 @@
 package org.java.epcGS1coder.sscc;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -35,6 +37,14 @@ public class Sscc96 {
                              long companyPrefix,
                              long serialReference){
         return new Sscc96(filter, companyPrefixDigits, companyPrefix, serialReference);
+    }
+
+    public static Sscc96 fromGs1Key(int filter,int companyPrefixDigits,String ai00){
+        if (ai00.length()<18 || !StringUtils.isNumeric(ai00))
+            throw new RuntimeException("AI 00 must be 18 digits long");
+
+        String uri = tagUriHeader+filter+"."+ai00.substring(1,companyPrefixDigits+1)+"."+ai00.charAt(0)+ai00.substring(companyPrefixDigits+1,17);
+        return fromUri(uri);
     }
 
     public static Sscc96 fromEpc(String epc){

@@ -1,5 +1,7 @@
 package org.java.epcGS1coder.sgtin;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -48,6 +50,13 @@ public class Sgtin198 extends Sgtin {
 									  int itemReference,
 									  String serial){
 		return new Sgtin198(filter,companyPrefixDigits,companyPrefix,itemReference,serial);
+	}
+
+	public static Sgtin198 fromGs1Key(int filter,int companyPrefixDigits, String ai01, String ai21) {
+		if (ai01.length()<14 || !StringUtils.isNumeric(ai01))
+			throw new RuntimeException("GTIN must be 14 digits long");
+
+		return fromUri(uriHeader + filter + "." + ai01.substring(1, companyPrefixDigits + 1) + "." + ai01.charAt(0) + ai01.substring(companyPrefixDigits + 1, 14 - 1) + "." + ai21);
 	}
 
 	public String getEpc() {

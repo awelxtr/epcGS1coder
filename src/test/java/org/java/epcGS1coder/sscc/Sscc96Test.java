@@ -30,4 +30,9 @@ public class Sscc96Test {
     public void fromFields(){
         Assert.assertEquals(Sscc96.fromFields(2,11,25697001250l,236970l).getEpc(),"3144BF7523E4439DAA000000");
     }
+
+    @Test
+    public void fromKey(){
+        Assert.assertEquals(Sscc96.fromGs1Key(2,7,"003456789012345678").getEpc(),"315415193835B7BF87000000");
+    }
 }

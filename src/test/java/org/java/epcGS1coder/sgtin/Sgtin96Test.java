@@ -41,4 +41,9 @@ public class Sgtin96Test {
         Sgtin96 sgtin96 = Sgtin96.fromFields(1, 7,8000,1137,11l);
         Assert.assertEquals("3034007d00011c400000000b",sgtin96.getEpc().toLowerCase());
     }
+
+    @Test
+    public void fromGs1KeyTest(){
+        Assert.assertEquals("3036015FFC22928003456588",Sgtin96.fromGs1Key(1,7,"08411135354029",54879624l).getEpc());
+    }
 }
