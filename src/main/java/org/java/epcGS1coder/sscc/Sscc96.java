@@ -43,8 +43,7 @@ public class Sscc96 {
         if (ai00.length()<18 || !StringUtils.isNumeric(ai00))
             throw new RuntimeException("AI 00 must be 18 digits long");
 
-        String uri = tagUriHeader+filter+"."+ai00.substring(1,companyPrefixDigits+1)+"."+ai00.charAt(0)+ai00.substring(companyPrefixDigits+1,17);
-        return fromUri(uri);
+        return new Sscc96(filter, companyPrefixDigits, Long.parseLong(ai00.substring(1,companyPrefixDigits+1)), Long.parseLong(ai00.charAt(0)+ai00.substring(companyPrefixDigits+1,17)));
     }
 
     public static Sscc96 fromEpc(String epc){

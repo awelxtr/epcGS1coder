@@ -56,7 +56,7 @@ public class Sgtin198 extends Sgtin {
 		if (ai01.length()<14 || !StringUtils.isNumeric(ai01))
 			throw new RuntimeException("GTIN must be 14 digits long");
 
-		return fromUri(uriHeader + filter + "." + ai01.substring(1, companyPrefixDigits + 1) + "." + ai01.charAt(0) + ai01.substring(companyPrefixDigits + 1, 14 - 1) + "." + ai21);
+		return new Sgtin198(filter, companyPrefixDigits, Long.parseLong(ai01.substring(1, companyPrefixDigits + 1)), Integer.parseInt(ai01.charAt(0) + ai01.substring(companyPrefixDigits + 1, 14 - 1)), ai21);
 	}
 
 	public String getEpc() {

@@ -120,8 +120,7 @@ public class Sgtin96 extends Sgtin{
 	public static Sgtin96 fromGs1Key(int filter,int companyPrefixDigits, String ai01, long ai21) {
 		if (ai01.length()<14 || !StringUtils.isNumeric(ai01))
 			throw new RuntimeException("GTIN must be 14 digits long");
-
-		return fromUri(uriHeader + filter + "." + ai01.substring(1, companyPrefixDigits + 1) + "." + ai01.charAt(0) + ai01.substring(companyPrefixDigits + 1, 14 - 1) + "." + String.valueOf(ai21));
+		return new Sgtin96(filter, companyPrefixDigits, Long.parseLong(ai01.substring(1, companyPrefixDigits + 1)), Integer.parseInt(ai01.substring(companyPrefixDigits + 1, 14 - 1)), ai21);
 	}
 
 
