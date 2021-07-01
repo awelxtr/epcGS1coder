@@ -102,7 +102,7 @@ public class Sgtin96 extends Sgtin{
 
 	public String getUri(){
 		if (uri == null)
-			uri = "urn:epc:tag:sgtin-96:"+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getItemReferenceDigits(partition)+"d",itemReference)+"."+String.valueOf(serial);
+			uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getItemReferenceDigits(partition)+"d",itemReference)+"."+String.valueOf(serial);
 		return uri;
 	}
 	void setUri(String uri){
