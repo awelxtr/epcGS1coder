@@ -157,9 +157,9 @@ public class Sgln195 extends Sgln {
 			sb.append(extensionSplit[i].substring(2));
 		}
 
-		Sgln195 sgtin198 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,sb.toString());
-		sgtin198.setUri(uri);
-		return sgtin198;
+		Sgln195 sgln195 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,sb.toString());
+		sgln195.setUri(uri);
+		return sgln195;
 	}
 
 	public static Sgln195 fromEpc(String epc) {
@@ -210,9 +210,9 @@ public class Sgln195 extends Sgln {
 
 		String extension = extensionBuilder.toString();
 
-		Sgln195 sgtin198 = new Sgln195(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,extension);
-		sgtin198.setEpc(bs);
-		return sgtin198;
+		Sgln195 sgln195 = new Sgln195(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,extension);
+		sgln195.setEpc(bs);
+		return sgln195;
 	}
 
 }

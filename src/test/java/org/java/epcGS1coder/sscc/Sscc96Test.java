@@ -3,8 +3,6 @@ package org.java.epcGS1coder.sscc;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.net.ssl.SSLServerSocket;
-
 public class Sscc96Test {
 
     @Test

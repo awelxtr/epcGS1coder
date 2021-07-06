@@ -21,7 +21,6 @@ public class Sgtin96 extends Sgtin{
 
 	private final static byte epcHeader = 0b00110000;
 	private final static byte serialSize = 38;
-	private final static byte GtinMaxSize = 44;
 	private static final String uriHeader = "urn:epc:tag:sgtin-96:";
 	
 	private String epc = null;

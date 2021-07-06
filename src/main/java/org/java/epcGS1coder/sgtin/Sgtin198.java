@@ -118,9 +118,7 @@ public class Sgtin198 extends Sgtin {
 	void setEpc(BitSet epc){ this.epc = epc; }
 	void setUri(String uri){ this.uri = uri; }
 
-	private String getUriSerialChar(String ch){
-		return getUriSerialChar(ch.charAt(0));
-	}
+
 
 	/**
 	 * Table A-1 for the encoding
