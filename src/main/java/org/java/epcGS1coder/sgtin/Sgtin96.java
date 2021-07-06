@@ -1,10 +1,10 @@
 package org.java.epcGS1coder.sgtin;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The Serialised Global Trade Item Number EPC scheme is used to assign a unique

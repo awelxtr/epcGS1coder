@@ -208,7 +208,7 @@ public class Sgtin198 extends Sgtin {
 		StringBuilder serialBuilder = new StringBuilder("");
 		byte[] tmpba;
 
-		i =208-58;
+		i =208-58; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getItemReferenceBits(partition)
 		for(int j = 0;j < 20 && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			serialBuilder.append(new String(tmpba));
 
