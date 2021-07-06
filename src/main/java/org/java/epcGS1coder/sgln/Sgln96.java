@@ -1,11 +1,10 @@
 package org.java.epcGS1coder.sgln;
 
-import org.apache.commons.lang3.StringUtils;
-import org.java.epcGS1coder.sgtin.Sgtin96;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class Sgln96 extends Sgln {
 
@@ -75,7 +74,7 @@ public class Sgln96 extends Sgln {
 
     public String getUri(){
         if (uri == null)
-            uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getLocationReferenceBits(partition)+"d",locationReference)+"."+String.valueOf(extension);
+            uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getLocationReferenceDigits(partition)+"d",locationReference)+"."+String.valueOf(extension);
         return uri;
     }
     void setUri(String uri) { this.uri = uri; }
@@ -90,8 +89,8 @@ public class Sgln96 extends Sgln {
 
     public static Sgln96 fromGs1Key(int filter,int companyPrefixDigits, String ai414, long ai254) {
         if (ai414.length()<13 || !StringUtils.isNumeric(ai414))
-            throw new RuntimeException("GTIN must be 14 digits long");
-        return new Sgln96(filter, companyPrefixDigits, Long.parseLong(ai414.substring(1, companyPrefixDigits + 1)), Integer.parseInt(ai414.substring(companyPrefixDigits + 1, 14 - 1)), ai254);
+            throw new RuntimeException("GLN must be 13 digits long");
+        return new Sgln96(filter, companyPrefixDigits, Long.parseLong(ai414.substring(0, companyPrefixDigits)), Integer.parseInt(ai414.substring(companyPrefixDigits, 13-1)), ai254);
     }
 
     public static Sgln96 fromUri(String uri) {
