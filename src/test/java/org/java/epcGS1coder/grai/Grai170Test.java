@@ -22,7 +22,7 @@ public class Grai170Test {
 
     @Test
     public void fromFieldsTest(){
-        Assert.assertEquals("37140E511C56ED3461D9B37A17E00000000000000000", Grai170.fromFields(0, 7, 234567, 89012, "hello%!?").getEpc().toUpperCase());
+        Assert.assertEquals("37140E511C56ED3461D9B37A17E00000000000000000", Grai170.fromFields(0, 7, 234567, 89012, "hallo!?").getEpc().toUpperCase());
     }
 
     @Test
