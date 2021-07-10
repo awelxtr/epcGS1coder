@@ -158,7 +158,7 @@ public class Grai170 extends Grai{
 			a.add(epc.substring(i, i+2));
 		}
 
-		ByteBuffer bb = ByteBuffer.allocate(26);
+		ByteBuffer bb = ByteBuffer.allocate(22);
 		for (int i = a.size() - 1; i>=0;i--)
 			bb.put((byte) Integer.parseInt(a.get(i),16));
 		bb.rewind();
