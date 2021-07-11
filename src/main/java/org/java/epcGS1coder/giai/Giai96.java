@@ -89,8 +89,8 @@ public class Giai96 extends Giai {
 	public static Giai96 fromFields(int filter,
 									int companyPrefixDigits,
 									long companyPrefix,
-									int assetType){
-		return new Giai96(filter, companyPrefixDigits,companyPrefix,assetType);
+									long individualAssetReference){
+		return new Giai96(filter, companyPrefixDigits,companyPrefix,individualAssetReference);
 	}
 
 	public static Giai96 fromGs1Key(int filter,int companyPrefixDigits, String ai8004) {
@@ -153,9 +153,9 @@ public class Giai96 extends Giai {
 		byte irb = getIndividualAssetReferenceBits(partition);
 		for(tmp = 0, i = 96 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - irb - 1;)
 			tmp+=1L<<(i-(96-8-3-3-cpb-irb));
-		int assetType = (int) tmp;
+		int individualAssetReference = (int) tmp;
 
-		Giai96 grai96 = new Giai96(filter,getCompanyPrefixDigits(partition),companyPrefix,assetType);
+		Giai96 grai96 = new Giai96(filter,getCompanyPrefixDigits(partition),companyPrefix,individualAssetReference);
 		grai96.setEpc(epc);
 		return grai96;
 	}
