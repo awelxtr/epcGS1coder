@@ -33,7 +33,7 @@ public class Giai96 extends Giai {
 
 	public String getEpc() {
 		if (epc == null){
-			BitSet epc = new BitSet(8 * 96); // Giai96*8 bits
+			BitSet epc = new BitSet(96);
 			int i = 0;
 
 			for (int j = 0; j < getIndividualAssetReferenceBits(partition); j++,i++)

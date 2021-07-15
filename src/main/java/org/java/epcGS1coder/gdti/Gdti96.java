@@ -37,7 +37,7 @@ public class Gdti96 extends Gdti{
 
 	public String getEpc() {
 		if (epc == null){
-			BitSet epc = new BitSet(8 * 96); // Gdti96*8 bits
+			BitSet epc = new BitSet(96); // Gdti96 bits
 			int i = 0;
 
 			for (int j = 0; j < serialSize; j++,i++)

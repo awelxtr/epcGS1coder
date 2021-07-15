@@ -33,7 +33,7 @@ public class Gsrnp96 extends Gsrn{
     
     public String getEpc() {
 		if (epc == null){
-			BitSet epc = new BitSet(8 * 96); // Gsrnp96*8 bits
+			BitSet epc = new BitSet(96);
 			int i = 0;
 
 			for (int j = 0; j < getServiceReferenceBits(partition); j++,i++)
