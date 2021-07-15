@@ -21,6 +21,7 @@ public class Sgln195 extends Sgln {
 	private final static byte epcHeader = 0b00111001;
 	private final static int extensionSize = 140;
 	private final static int padding = 13;
+	private final static byte serialMaxChars = 20;
 	private final static String uriHeader = "urn:epc:tag:sgln-195:";
 	
 	private BitSet epc;
@@ -41,6 +42,8 @@ public class Sgln195 extends Sgln {
 		this.partition = (byte) getPartition(companyPrefixDigits);
 		this.companyPrefix = companyPrefix;
 		this.locationReference = locationReference;
+		if (extension.length() > serialMaxChars)
+			throw new RuntimeException("Extension must at most " + serialMaxChars + " alphanumeric characters long");
 		this.extension = extension;
 	}
 
@@ -205,7 +208,7 @@ public class Sgln195 extends Sgln {
 		byte[] tmpba;
 
 		i =208-55; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getLocationReferenceBits(partition)
-		for(int j = 0;j < 20 && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			extensionBuilder.append(new String(tmpba));
 
 		String extension = extensionBuilder.toString();

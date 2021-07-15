@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Giai202 extends Giai{
     private final static byte epcHeader = 0b00111000;
 	private final static int padding = 6;
+	private final static byte serialMaxChars = 24;
 	private final static String uriHeader = "urn:epc:tag:giai-202:";
 	
 	private BitSet epc;
@@ -27,6 +28,8 @@ public class Giai202 extends Giai{
 		this.filter = GiaiFilter.values()[filter];
 		this.partition = (byte) getPartition(companyPrefixDigits);
 		this.companyPrefix = companyPrefix;
+		if (individualAssetReference.length() > serialMaxChars)
+			throw new RuntimeException("Individual Asset Reference must at most " + serialMaxChars + " alphanumeric characters long");
 		this.individualAssetReference = individualAssetReference;
 	}
 
@@ -176,7 +179,7 @@ public class Giai202 extends Giai{
 		byte[] tmpba;
 
 		i =208-8-3-3-getCompanyPrefixBits(partition); //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition)
-		for(int j = 0;j < 20 && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			individualAssetReferenceBuilder.append(new String(tmpba));
 
 		String individualAssetReference = individualAssetReferenceBuilder.toString();

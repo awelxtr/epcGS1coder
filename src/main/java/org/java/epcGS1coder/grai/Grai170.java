@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Grai170 extends Grai{
     private final static byte epcHeader = 0b00110111;
 	private final static int serialSize = 112;
+	private final static byte serialMaxChars = 16;
 	private final static int padding = 6;
 	private final static String uriHeader = "urn:epc:tag:grai-170:";
 	
@@ -31,6 +32,8 @@ public class Grai170 extends Grai{
 		this.partition = (byte) getPartition(companyPrefixDigits);
 		this.companyPrefix = companyPrefix;
 		this.assetType = assetType;
+		if (serial.length() > serialMaxChars)
+			throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
 		this.serial = serial;
 	}
 
@@ -195,7 +198,7 @@ public class Grai170 extends Grai{
 		byte[] tmpba;
 
 		i =176-58; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getAssetTypeBits(partition)
-		for(int j = 0;j < 20 && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			serialBuilder.append(new String(tmpba));
 
 		String serial = serialBuilder.toString();

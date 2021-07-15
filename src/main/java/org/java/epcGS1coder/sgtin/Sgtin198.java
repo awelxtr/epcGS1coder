@@ -21,6 +21,7 @@ public class Sgtin198 extends Sgtin {
 	private final static byte epcHeader = 0b00110110;
 	private final static int serialSize = 140;
 	private final static int padding = 10;
+	private final static byte serialMaxChars = 20;
 	private final static String uriHeader = "urn:epc:tag:sgtin-198:";
 	
 	private BitSet epc;
@@ -41,6 +42,8 @@ public class Sgtin198 extends Sgtin {
 		this.partition = (byte) getPartition(companyPrefixDigits);
 		this.companyPrefix = companyPrefix;
 		this.itemReference = itemReference;
+		if (serial.length() > serialMaxChars)
+			throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
 		this.serial = serial;
 	}
 
@@ -207,7 +210,7 @@ public class Sgtin198 extends Sgtin {
 		byte[] tmpba;
 
 		i =208-58; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getItemReferenceBits(partition)
-		for(int j = 0;j < 20 && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			serialBuilder.append(new String(tmpba));
 
 		String serial = serialBuilder.toString();
