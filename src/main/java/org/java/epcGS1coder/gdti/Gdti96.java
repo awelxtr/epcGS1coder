@@ -107,7 +107,7 @@ public class Gdti96 extends Gdti{
 
 	public static Gdti96 fromGs1Key(int filter,int companyPrefixDigits, String ai253) {
 		if (ai253.length()<14 || !StringUtils.isNumeric(ai253))
-			throw new RuntimeException("GRAI with serial must be 14 digits long");
+			throw new RuntimeException("GDTI with Serial must be at least 14 digits long");
 		return new Gdti96(filter, companyPrefixDigits, Long.parseLong(ai253.substring(0, companyPrefixDigits)), Integer.parseInt(ai253.substring(companyPrefixDigits, 13 - 1)), Long.parseLong(ai253.substring(13)));
 	}
 
