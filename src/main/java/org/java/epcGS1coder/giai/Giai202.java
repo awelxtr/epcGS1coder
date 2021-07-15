@@ -170,7 +170,7 @@ public class Giai202 extends Giai{
 			tmp+=1L<<(i-(208-8-3-3));
 		byte partition = (byte) tmp;
 
-		byte cpb = getCompanyPrefixBits(partition);
+		final byte cpb = getCompanyPrefixBits(partition);
 		for(tmp = 0, i = 208 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - 1;)
 			tmp+=1L<<(i-(208-8-3-3-cpb));
 		long companyPrefix = tmp;
@@ -178,7 +178,7 @@ public class Giai202 extends Giai{
 		StringBuilder individualAssetReferenceBuilder = new StringBuilder("");
 		byte[] tmpba;
 
-		i =208-8-3-3-getCompanyPrefixBits(partition); //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition)
+		i =208-8-3-3-cpb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition)
 		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			individualAssetReferenceBuilder.append(new String(tmpba));
 

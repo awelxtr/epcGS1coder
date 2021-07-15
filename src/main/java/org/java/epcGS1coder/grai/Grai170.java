@@ -184,20 +184,20 @@ public class Grai170 extends Grai{
 			tmp+=1L<<(i-(176-8-3-3));
 		byte partition = (byte) tmp;
 
-		byte cpb = getCompanyPrefixBits(partition);
+		final byte cpb = getCompanyPrefixBits(partition);
 		for(tmp = 0, i = 176 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 176 - 8 - 3 - 3 - cpb - 1;)
 			tmp+=1L<<(i-(176-8-3-3-cpb));
 		long companyPrefix = tmp;
 
-		byte irb = getAssetTypeBits(partition);
-		for(tmp = 0, i = 176 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 176 - 8 - 3 - 3 - cpb - irb - 1;)
-			tmp+=1L<<(i-(176-8-3-3-cpb-irb));
+		final byte atb = getAssetTypeBits(partition);
+		for(tmp = 0, i = 176 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 176 - 8 - 3 - 3 - cpb - atb - 1;)
+			tmp+=1L<<(i-(176-8-3-3-cpb-atb));
 		int assetType = (int) tmp;
 
 		StringBuilder serialBuilder = new StringBuilder("");
 		byte[] tmpba;
 
-		i =176-58; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getAssetTypeBits(partition)
+		i =176-8-3-3-cpb-atb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getAssetTypeBits(partition)
 		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			serialBuilder.append(new String(tmpba));
 

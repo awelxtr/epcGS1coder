@@ -195,7 +195,7 @@ public class Gdti174 extends Gdti {
 		StringBuilder serialBuilder = new StringBuilder("");
 		byte[] tmpba;
 
-		i =176-(8+3+3+cpb+dtb)   ; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getDocumentTypeBits(partition)
+		i =176-8-3+3-cpb-dtb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getDocumentTypeBits(partition)
 		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			serialBuilder.append(new String(tmpba));
 

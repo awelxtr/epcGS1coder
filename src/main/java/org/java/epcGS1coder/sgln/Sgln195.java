@@ -194,20 +194,20 @@ public class Sgln195 extends Sgln {
 			tmp+=1L<<(i-(208-8-3-3));
 		byte partition = (byte) tmp;
 
-		byte cpb = getCompanyPrefixBits(partition);
+		final byte cpb = getCompanyPrefixBits(partition);
 		for(tmp = 0, i = 208 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - 1;)
 			tmp+=1L<<(i-(208-8-3-3-cpb));
 		long companyPrefix = tmp;
 
-		byte irb = getLocationReferenceBits(partition);
-		for(tmp = 0, i = 208 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - irb - 1;)
-			tmp+=1L<<(i-(208-8-3-3-cpb-irb));
+		final byte lrb = getLocationReferenceBits(partition);
+		for(tmp = 0, i = 208 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - lrb - 1;)
+			tmp+=1L<<(i-(208-8-3-3-cpb-lrb));
 		int locationReference = (int) tmp;
 
 		StringBuilder extensionBuilder = new StringBuilder("");
 		byte[] tmpba;
 
-		i =208-55; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getLocationReferenceBits(partition)
+		i =208-8-3-3-cpb-lrb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getLocationReferenceBits(partition)
 		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
 			extensionBuilder.append(new String(tmpba));
 
