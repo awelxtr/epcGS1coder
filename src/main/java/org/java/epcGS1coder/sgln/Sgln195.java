@@ -32,7 +32,7 @@ public class Sgln195 extends Sgln {
 	private String extension;
 	private String uri = null;
 
-	public Sgln195(int filter,
+	Sgln195(int filter,
 					int companyPrefixDigits,
 					long companyPrefix,
 					int locationReference,

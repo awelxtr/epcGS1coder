@@ -32,7 +32,7 @@ public class Sgtin198 extends Sgtin {
 	private String serial;
 	private String uri = null;
 
-	public Sgtin198(int filter,
+	Sgtin198(int filter,
 					int companyPrefixDigits,
 					long companyPrefix,
 					int itemReference,

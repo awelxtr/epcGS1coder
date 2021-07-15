@@ -22,7 +22,7 @@ public class Grai170 extends Grai{
 	private String serial;
 	private String uri = null;
 
-	public Grai170(int filter,
+	Grai170(int filter,
 					int companyPrefixDigits,
 					long companyPrefix,
 					int assetType,

@@ -20,7 +20,7 @@ public class Giai202 extends Giai{
 	private String individualAssetReference;
 	private String uri = null;
 
-	public Giai202(int filter,
+	Giai202(int filter,
 					int companyPrefixDigits,
 					long companyPrefix,
 					String individualAssetReference){
