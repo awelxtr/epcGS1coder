@@ -33,7 +33,7 @@ public class Gsrn96 extends Gsrn{
     
     public String getEpc() {
 		if (epc == null){
-			BitSet epc = new BitSet(8 * 96); // Gsrn96*8 bits
+			BitSet epc = new BitSet(8 * 96);
 			int i = 0;
 
 			for (int j = 0; j < getServiceReferenceBits(partition); j++,i++)
@@ -86,21 +86,21 @@ public class Gsrn96 extends Gsrn{
 		this.uri = uri;
 	};
 
-	public static Gsrnp96 fromFields(int filter,
+	public static Gsrn96 fromFields(int filter,
 									int companyPrefixDigits,
 									long companyPrefix,
 									long serviceReference){
-		return new Gsrnp96(filter, companyPrefixDigits,companyPrefix,serviceReference);
+		return new Gsrn96(filter, companyPrefixDigits,companyPrefix,serviceReference);
 	}
 
-	public static Gsrnp96 fromGs1Key(int filter,int companyPrefixDigits, String ai8018) {
+	public static Gsrn96 fromGs1Key(int filter,int companyPrefixDigits, String ai8018) {
 		if (ai8018.length()!=18 || !StringUtils.isNumeric(ai8018))
 			throw new RuntimeException("GSRN must be 18 digits");
-		return new Gsrnp96(filter, companyPrefixDigits, Long.parseLong(ai8018.substring(0, companyPrefixDigits)), Long.parseLong(ai8018.substring(companyPrefixDigits,ai8018.length()-1)));
+		return new Gsrn96(filter, companyPrefixDigits, Long.parseLong(ai8018.substring(0, companyPrefixDigits)), Long.parseLong(ai8018.substring(companyPrefixDigits,ai8018.length()-1)));
 	}
 
 
-	public static Gsrnp96 fromUri(String uri) {
+	public static Gsrn96 fromUri(String uri) {
 		if (!uri.startsWith(uriHeader))
 			throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
 
@@ -110,13 +110,13 @@ public class Gsrn96 extends Gsrn{
 		long companyPrefix = Long.parseLong(uriParts[1]);
 		long serviceReference = Long.parseLong(uriParts[2]);
 
-		Gsrnp96 gsrn = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,serviceReference);
+		Gsrn96 gsrn = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,serviceReference);
 		gsrn.setUri(uri);
 
 		return gsrn;
 	}
 
-	public static Gsrnp96 fromEpc(String epc) {
+	public static Gsrn96 fromEpc(String epc) {
 		ArrayList<String> a = new ArrayList<String>();
 		for (int i = 0; i<epc.length(); i+=2) {
 			a.add(epc.substring(i, i+2));
@@ -155,7 +155,7 @@ public class Gsrn96 extends Gsrn{
 			tmp+=1L<<(i-(96-8-3-3-cpb-srb));
 		long serviceReference = tmp;
 
-		Gsrnp96 gsrn = new Gsrnp96(filter,getCompanyPrefixDigits(partition),companyPrefix,serviceReference);
+		Gsrn96 gsrn = new Gsrn96(filter,getCompanyPrefixDigits(partition),companyPrefix,serviceReference);
 		gsrn.setEpc(epc);
 		return gsrn;
 	}
