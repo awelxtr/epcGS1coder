@@ -9,10 +9,11 @@ public class Sgtin96Test {
     public void fromEpc(){
         String epc = "3034007D00011C400000000B";
         Sgtin96 sgtin96 = Sgtin96.fromEpc(epc);
-        Assert.assertEquals(sgtin96.getFilter(),1);
-        Assert.assertEquals(sgtin96.getCompanyPrefix(),8000);
-        Assert.assertEquals(sgtin96.getItemReference(),1137);
-        Assert.assertEquals(sgtin96.getSerial(),11l);
+        Assert.assertEquals(1,sgtin96.getFilter());
+        Assert.assertEquals(8000, sgtin96.getCompanyPrefix());
+        Assert.assertEquals(1137, sgtin96.getItemReference());
+        Assert.assertEquals(11l, sgtin96.getSerial());
+        Assert.assertEquals("00008000011378", sgtin96.getGTIN());
     }
 
     @Test
@@ -46,4 +47,5 @@ public class Sgtin96Test {
     public void fromGs1KeyTest(){
         Assert.assertEquals("3036015FFC22928003456588",Sgtin96.fromGs1Key(1,7,"08411135354029",54879624l).getEpc());
     }
+    
 }
