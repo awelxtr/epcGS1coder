@@ -42,4 +42,11 @@ public class CpiVarTest {
 
         Assert.assertEquals("3D1878AC34DB800000D7D829C000",CpiVar.fromGs1Key(0,6,"123568468",56582311l).getEpc().toUpperCase());
     }
+
+    @Test
+    public void docExampleTest(){
+        CpiVar cpivar= CpiVar.fromGs1Key(3,7,"06141415PQ7/Z43",12345l);
+        Assert.assertEquals("urn:epc:tag:cpi-var:3.0614141.5PQ7%2FZ43.12345", cpivar.getUri());
+        Assert.assertEquals("3D74257BF75411DEF6B4CC00000003039", cpivar.getEpc());
+    }
 }

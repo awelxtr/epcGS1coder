@@ -51,18 +51,17 @@ public class CpiVar extends Cpi{
 	}
 
 	public static CpiVar fromGs1Key(int filter,int companyPrefixDigits, String ai8010, long ai8011) {
-		if (ai8010.length()<6 || ai8010.length()>30 || !StringUtils.isNumeric(ai8010))
-			throw new RuntimeException("CPI must be between 6 and 30 digits long");
+		if (ai8010.length()<6 || ai8010.length()>30)
+			throw new RuntimeException("CPI must be between 6 and 30 alphanumeric characters long");
 
 		return new CpiVar(filter, companyPrefixDigits, Long.parseLong(ai8010.substring(0, companyPrefixDigits)), ai8010.substring(companyPrefixDigits), ai8011);
 	}
 
 	public String getEpc() {
+		// how many bytes takes to fit all the data.
+		int bsSize = (int) Math.ceil((double) (8+3+3+getCompanyPrefixBits(partition) + (companyPartReference.length()+1)*6 + 40)/8)*8;
 		if (epc == null){
-            // how many bytes takes to fit all the data.
-            
-            int bsSize = (int) Math.ceil((double) (8+3+3+getCompanyPrefixBits(partition) + new BigInteger(companyPartReference).bitLength() + 40)/8)*8;
-			epc = new BitSet(bsSize); //CpiVar epc is up to 56 hex chars long
+            epc = new BitSet(bsSize);
             
             for (int j = 0, i=bsSize - 8; j < 8; j++,i++)
 				epc.set(i, ((epcHeader >> j) & 1)==1);
@@ -85,28 +84,18 @@ public class CpiVar extends Cpi{
             //In the epc the companyPartReference must be followed by 0b000000;
             byte b = 0b000000;
             for (int j = 5; j >= 0; j--,k--)
-					epc.set(k, ((b >> j) & 1) == 1);
-
-			// i = serialSize + getComponentPartReferenceMaximumBits(partition);
-			// for (int j = 0; j < getCompanyPrefixBits(partition); j++,i++)
-			// 	epc.set(i, ((companyPrefix >> j) & 1)==1);
-
-			// for (int j = 0; j < 3; j++,i++)
-			// 	epc.set(i, ((partition >> j) & 1)==1);
-
-			// for (int j = 0; j < 3; j++,i++)
-			// 	epc.set(i, ((filter.getValue() >> j) & 1)==1);
-
-			// for (int j = 0; j < 8; j++,i++)
-			// 	epc.set(i, ((epcHeader >> j) & 1)==1);
-
-            for (int j = 0, i=0; j < serialSize; j++,i++)
-				epc.set(i, ((serial >> j) & 1)==1);
+				epc.set(k, ((b >> j) & 1) == 1);
+            
+			for (int j = 0, i = k - 40 + 1 ; j < serialSize; j++,i++) 
+			 	epc.set(i, ((serial >> j) & 1)==1);
 		}
+
 		byte[] epcba = epc.toByteArray();
-		StringBuffer sb = new StringBuffer(52);
+		StringBuffer sb = new StringBuffer(bsSize/4);
 		for (int i = epcba.length-1; i>=0; i--)
 			sb.append(String.format("%02X",epcba[i]));
+		while(sb.length() < sb.capacity())
+			sb.append("0");
 
 		return sb.toString();
 	}
@@ -129,7 +118,7 @@ public class CpiVar extends Cpi{
 
 	public String getUri() {
 		if (uri == null)
-			uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+companyPartReference+"."+serial;
+			uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+companyPartReference.chars().mapToObj(c -> getUriCompanyPartReferenceChar((char) c)).collect(Collectors.joining())+"."+serial;
 		return uri;
 	}
 
@@ -203,6 +192,21 @@ public class CpiVar extends Cpi{
 		CpiVar cpiVar = new CpiVar(filter,getCompanyPrefixDigits(partition),companyPrefix,companyPartReference,serial);
 		cpiVar.setEpc(bs);
 		return cpiVar;
+	}
+
+	/**
+	 * Table A-1 for the encoding
+	 */
+	private String getUriCompanyPartReferenceChar(char ch){
+		if (!((ch>='0' && ch<='9') || (ch>='A' && ch<='Z') || ch=='#' || ch=='-' || ch=='/')) 
+			throw new RuntimeException("Wrong char");
+		switch (ch){
+			case '#':
+			case '/':
+				return "%"+String.format("%02x",(int) ch).toUpperCase();
+			default:
+				return String.valueOf(ch);
+		}
 	}
 
     /**
