@@ -45,7 +45,12 @@ public class CpiVarTest {
 
     @Test
     public void docExampleTest(){
-        CpiVar cpivar= CpiVar.fromGs1Key(3,7,"06141415PQ7/Z43",12345l);
+        CpiVar cpivar;
+        
+        cpivar= CpiVar.fromEpc("3D74257BF75411DEF6B4CC00000003039");
+        Assert.assertEquals("urn:epc:tag:cpi-var:3.0614141.5PQ7%2FZ43.12345", cpivar.getUri());
+
+        cpivar= CpiVar.fromGs1Key(3,7,"06141415PQ7/Z43",12345l);
         Assert.assertEquals("urn:epc:tag:cpi-var:3.0614141.5PQ7%2FZ43.12345", cpivar.getUri());
         Assert.assertEquals("3D74257BF75411DEF6B4CC00000003039", cpivar.getEpc());
     }

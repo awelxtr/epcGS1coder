@@ -21,22 +21,22 @@ public class CpiVar extends Cpi{
 	private byte partition;
 	private CpiFilter filter;
 	private long companyPrefix;
-	private String companyPartReference;
+	private String componentPartReference;
 	private long serial;
 	private String uri = null;
 
 	CpiVar(int filter,
            int companyPrefixDigits,
            long companyPrefix,
-           String companyPartReference,
+           String componentPartReference,
            long serial){
 		this.filter = CpiFilter.values()[filter];
 		this.partition = (byte) getPartition(companyPrefixDigits);
 		this.companyPrefix = companyPrefix;
         int maxDigits = getComponentPartReferenceMaximumDigits(partition);
-        if (companyPartReference.length() > maxDigits)
+        if (componentPartReference.length() > maxDigits)
             throw new RuntimeException("Company/Part Reference must at the very most "+maxDigits+" digits characters long");
-        this.companyPartReference = companyPartReference;
+        this.componentPartReference = componentPartReference;
 		if (serial > maxSerialValue)
 			throw new RuntimeException("Serial max value is " + maxSerialValue);
 		this.serial = serial;
@@ -45,9 +45,9 @@ public class CpiVar extends Cpi{
 	public static CpiVar fromFields(int filter,
 									int companyPrefixDigits,
 									long companyPrefix,
-									String companyPartReference,
+									String componentPartReference,
 									long serial){
-		return new CpiVar(filter,companyPrefixDigits,companyPrefix,companyPartReference,serial);
+		return new CpiVar(filter,companyPrefixDigits,companyPrefix,componentPartReference,serial);
 	}
 
 	public static CpiVar fromGs1Key(int filter,int companyPrefixDigits, String ai8010, long ai8011) {
@@ -59,9 +59,9 @@ public class CpiVar extends Cpi{
 
 	public String getEpc() {
 		// how many bytes takes to fit all the data.
-		int bsSize = (int) Math.ceil((double) (8+3+3+getCompanyPrefixBits(partition) + (companyPartReference.length()+1)*6 + 40)/8)*8;
+		int bsSize = (int) Math.ceil((double) (8+3+3+getCompanyPrefixBits(partition) + (componentPartReference.length()+1) * 6 + 40)/4)*4;
 		if (epc == null){
-            epc = new BitSet(bsSize);
+            epc = new BitSet(bsSize+bsSize%8);
             
             for (int j = 0, i=bsSize - 8; j < 8; j++,i++)
 				epc.set(i, ((epcHeader >> j) & 1)==1);
@@ -77,7 +77,7 @@ public class CpiVar extends Cpi{
                 
                             
             int k = bsSize - (8+3+3+getCompanyPrefixBits(partition)+1);
-			for (byte b : companyPartReference.getBytes()) {
+			for (byte b : componentPartReference.getBytes()) {
 				for (int j = 5; j >= 0; j--,k--)
 					epc.set(k, ((b >> j) & 1) == 1);
 			}
@@ -91,13 +91,14 @@ public class CpiVar extends Cpi{
 		}
 
 		byte[] epcba = epc.toByteArray();
-		StringBuffer sb = new StringBuffer(bsSize/4);
+
+		StringBuffer sb = new StringBuffer();
 		for (int i = epcba.length-1; i>=0; i--)
 			sb.append(String.format("%02X",epcba[i]));
 		while(sb.length() < sb.capacity())
 			sb.append("0");
 
-		return sb.toString();
+		return sb.toString();//.substring(0,bsSize/4);
 	}
 
 	public int getFilter() {
@@ -108,8 +109,8 @@ public class CpiVar extends Cpi{
 		return companyPrefix;
 	}
 
-	public String getCompanyPartReference() {
-		return companyPartReference;
+	public String getComponentPartReference() {
+		return componentPartReference;
 	}
 
 	public long getSerial() {
@@ -118,7 +119,7 @@ public class CpiVar extends Cpi{
 
 	public String getUri() {
 		if (uri == null)
-			uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+companyPartReference.chars().mapToObj(c -> getUriCompanyPartReferenceChar((char) c)).collect(Collectors.joining())+"."+serial;
+			uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+componentPartReference.chars().mapToObj(c -> getUriCompanyPartReferenceChar((char) c)).collect(Collectors.joining())+"."+serial;
 		return uri;
 	}
 
@@ -143,11 +144,13 @@ public class CpiVar extends Cpi{
 
 	public static CpiVar fromEpc(String epc) {
 		ArrayList<String> a = new ArrayList<String>();
+		if (epc.length() % 2 != 0)
+			epc+="0";
 		for (int i = 0; i<epc.length(); i+=2) {
 			a.add(epc.substring(i, i+2));
 		}
 
-		ByteBuffer bb = ByteBuffer.allocate(26);
+		ByteBuffer bb = ByteBuffer.allocate(epc.length() * 4);
 		for (int i = a.size() - 1; i>=0;i--)
 			bb.put((byte) Integer.parseInt(a.get(i),16));
 		bb.rewind();
@@ -155,39 +158,42 @@ public class CpiVar extends Cpi{
 		BitSet bs = BitSet.valueOf(bb);
 
 		int i;
+		int epcBits = epc.length()*4;
 		long tmp;
 
-		for(tmp = 0, i = 208; (i = bs.previousSetBit(i-1)) > 208 - 8 - 1;)
-			tmp+=1L<<(i-(208-8));
+		for(tmp = 0, i = epcBits; (i = bs.previousSetBit(i-1)) > epcBits - 8 - 1;)
+			tmp+=1L<<(i-(epcBits-8));
 		if (tmp != epcHeader)
 			throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
-		for(tmp = 0, i = 208 - 8; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 1;)
-			tmp+=1L<<(i-(208-8-3));
+		for(tmp = 0, i = epcBits - 8; (i = bs.previousSetBit(i-1)) > epcBits - 8 - 3 - 1;)
+			tmp+=1L<<(i-(epcBits-8-3));
 		int filter = (int) tmp;
 
-		for(tmp = 0, i = 208 - 8 - 3; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - 1;)
-			tmp+=1L<<(i-(208-8-3-3));
+		for(tmp = 0, i = epcBits - 8 - 3; (i = bs.previousSetBit(i-1)) > epcBits - 8 - 3 - 3 - 1;)
+			tmp+=1L<<(i-(epcBits-8-3-3));
 		byte partition = (byte) tmp;
 
 		byte cpb = getCompanyPrefixBits(partition);
-		for(tmp = 0, i = 208 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - 1;)
-			tmp+=1L<<(i-(208-8-3-3-cpb));
+		for(tmp = 0, i = epcBits - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > epcBits - 8 - 3 - 3 - cpb - 1;)
+			tmp+=1L<<(i-(epcBits-8-3-3-cpb));
 		long companyPrefix = tmp;
 
-		byte irb = getCompanyPartReferenceBits(partition);
-		for(tmp = 0, i = 208 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 3 - cpb - irb - 1;)
-			tmp+=1L<<(i-(208-8-3-3-cpb-irb));
-		int companyPartReference = (int) tmp;
-
-		StringBuilder serialBuilder = new StringBuilder("");
 		byte[] tmpba;
+		StringBuilder companyPartReferenceBuilder = new StringBuilder("");
+		i++;
+		for(int j = 0;j < getComponentPartReferenceMaximumDigits(partition) && (tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6,j++){
+			if (tmpba[0]>=0b000001 && tmpba[0] <= 0b011010) // Encoded [A-Z] => Table G-1 Characters Permitted in 6-bit Alphanumeric Fields
+				tmpba[0]|=0b01000000;	
+			companyPartReferenceBuilder.append(new String(tmpba));		
+		}
+		i-=6;
+		String companyPartReference = companyPartReferenceBuilder.toString();
 
-		i =208-58; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getCompanyPartReferenceBits(partition)
-		for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
-			serialBuilder.append(new String(tmpba));
-
-		String serial = serialBuilder.toString();
+		long offset = i - serialSize;
+		for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
+			tmp+=1L<<(i - offset);
+		long serial = tmp;
 
 		CpiVar cpiVar = new CpiVar(filter,getCompanyPrefixDigits(partition),companyPrefix,companyPartReference,serial);
 		cpiVar.setEpc(bs);
