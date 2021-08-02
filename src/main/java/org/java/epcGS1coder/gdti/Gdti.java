@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.gdti;
 
-public class Gdti {
+class Gdti {
     /**
      * Table 14-20 GDTI Partition Table
      * @param partition

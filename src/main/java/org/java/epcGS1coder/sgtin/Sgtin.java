@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.sgtin;
 
-public abstract class Sgtin {
+class Sgtin {
 
     /**
      * Table 14-2 SGTIN Partition Table

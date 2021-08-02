@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.grai;
 
-public class Grai {
+class Grai {
 
     /**
      * Table 14-10 GRAI Partition Table

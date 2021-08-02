@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.gsrn;
 
-public class Gsrn {
+class Gsrn {
 
     /**
      * Table 14-17 GSRN Partition Table

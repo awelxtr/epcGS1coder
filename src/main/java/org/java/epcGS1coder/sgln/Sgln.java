@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.sgln;
 
-public class Sgln {
+class Sgln {
 
     /**
      * Table 14-7 SGLN Partition Table

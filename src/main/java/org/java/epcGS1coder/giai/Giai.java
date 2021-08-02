@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.giai;
 
-public class Giai {
+class Giai {
 
     protected enum GiaiFilter{
         all_others_0(0),

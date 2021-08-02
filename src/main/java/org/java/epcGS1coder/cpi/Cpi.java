@@ -1,6 +1,6 @@
 package org.java.epcGS1coder.cpi;
 
-public class Cpi {
+class Cpi {
     protected enum CpiFilter{
         all_others_0(0),
         reserved_1(1),
