@@ -40,14 +40,7 @@ public class Usdod96 {
             return (char)(cageByte & 0b00001111);
         return (char) cageByte;
     }
-    public String getEpcString(BitSet epc){
-        byte[] epcba = epc.toByteArray();
-			StringBuffer sb = new StringBuffer(epcba.length*2);
-			for (int i = epcba.length-1; i>=0; i--)
-				sb.append(String.format("%02X",epcba[i]));
 
-        return sb.toString();
-    }
     public String getEpc() {
         if (epc == null){
             BitSet epc = new BitSet(96); 
