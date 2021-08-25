@@ -136,10 +136,13 @@ public class Usdod96 {
 		byte[] tmpba;
 
         i=96-8-4;
+        if (bs.get(i-8,i).toByteArray()[0] != 32) // the encoded CAGE starts with a ' ' 
+            throw new RuntimeException("CAGE code incorrectly encoded");
+        i-=8;    
         for(int j = 0;j < governmentManagedIdentifierSize && (tmpba = bs.get(i-8,i).toByteArray()).length!=0;i-=8,j++)
 			cageBuilder.append(getCageCodeChar(tmpba[0]));
 
-        String governmentManagedIdentifier = cageBuilder.toString().substring(1); // encoded CAGE code starts with ' '
+        String governmentManagedIdentifier = cageBuilder.toString(); // encoded CAGE code starts with ' '
 
         for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
 			tmp+=1L<<i;
