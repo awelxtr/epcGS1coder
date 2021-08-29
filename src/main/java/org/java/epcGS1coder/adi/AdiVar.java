@@ -36,34 +36,36 @@ public class AdiVar {
     }
 
     private static char getCageCodeChar(byte cageByte){
-        if (cageByte>=0b00110000 && cageByte<=0b00111001)
-            return (char)cageByte;
+        if (cageByte >= 0b00110000 && cageByte <= 0b00111001) // [0-9] (0x30 <-> 0x39)
+            return (char) cageByte;
         return (char) (cageByte|0b01000000);
-    }
+     }
    
     public String getEpc() {
         if (epc == null){
-            BitSet epc = new BitSet(434); 
+            int epcBitSize = 8+6+36+(partNumber.length()+1+serial.length()+1+1)*6;
+            BitSet epc = new BitSet(epcBitSize); 
 
-            int i = 434 - (8 + 6 + 1);
+            int i = epcBitSize-(8+6+1);
+
             for (int t : (" " + cage).chars().map(c -> getCageCodeByte((char) c)).toArray()){
                 byte b = (byte) t;
-                for (int j = 7; j >= 0; j--,i--)
+                for (int j = 5; j >= 0; j--,i--)
 					epc.set(i, ((b >> j) & 1) == 1);
             }
 
             for (byte b : partNumber.getBytes()) {
-				for (int j = 6; j >= 0; j--,i--)
+				for (int j = 5; j >= 0; j--,i--)
 					epc.set(i, ((b >> j) & 1) == 1);
 			}
             i+=6;
 
             for (byte b : serial.getBytes()) {
-				for (int j = 6; j >= 0; j--,i--)
+				for (int j = 5; j >= 0; j--,i--)
 					epc.set(i, ((b >> j) & 1) == 1);
 			}
 
-            i = 434 - (8 + 6);
+            i = epcBitSize - (8 + 6);
             for (int j = 0; j < 6; j++,i++)
 				epc.set(i, ((filter.getValue() >> j) & 1)==1);
 
