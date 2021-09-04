@@ -43,8 +43,15 @@ public class AdiVar {
    
     public String getEpc() {
         if (epc == null){
-            int epcBitSize = 8+6+36+(partNumber.length()+1+serial.length()+1+1)*6;
-            BitSet epc = new BitSet(epcBitSize); 
+            int epcBitSize = 8+6+36+(partNumber.length()+1+serial.length()+1)*6;
+            epcBitSize+=epcBitSize%8;
+            
+            BitSet epc = new BitSet(); 
+            for (int j = 0,i=epcBitSize-8; j < 8; j++,i++)
+                epc.set(i, ((epcHeader >> j) & 1)==1);
+            
+            for (int j = 0,i=epcBitSize-(8+6); j < 6; j++,i++)
+				epc.set(i, ((filter.getValue() >> j) & 1)==1);
 
             int i = epcBitSize-(8+6+1);
 
@@ -54,30 +61,30 @@ public class AdiVar {
 					epc.set(i, ((b >> j) & 1) == 1);
             }
 
-            for (byte b : partNumber.getBytes()) {
-				for (int j = 5; j >= 0; j--,i--)
-					epc.set(i, ((b >> j) & 1) == 1);
-			}
-            i+=6;
-
-            for (byte b : serial.getBytes()) {
+            for(int t = 0; t<partNumber.length();t++){
+                byte b = partNumber.getBytes()[t];
 				for (int j = 5; j >= 0; j--,i--)
 					epc.set(i, ((b >> j) & 1) == 1);
 			}
 
-            i = epcBitSize - (8 + 6);
-            for (int j = 0; j < 6; j++,i++)
-				epc.set(i, ((filter.getValue() >> j) & 1)==1);
+            for (int j = 0;j<6;i--,j++)
+                epc.clear(i);
 
-			for (int j = 0; j < 8; j++,i++)
-				epc.set(i, ((epcHeader >> j) & 1)==1);
+            for(int t = 0; t<serial.length();t++){
+                byte b = serial.getBytes()[t];
+				for (int j = 5; j >= 0; j--,i--)
+					epc.set(i, ((b >> j) & 1) == 1);
+			}
 
+            for (int j = 0;j<6;i--,j++) 
+                epc.clear(i);
+            
             byte[] epcba = epc.toByteArray();
 			StringBuffer sb = new StringBuffer(epcba.length*2);
-			for (i = epcba.length-1; i>=0; i--)
+			for (i = epcba.length - 1; i>=0; i--)
 				sb.append(String.format("%02X",epcba[i]));
 
-			this.epc = sb.toString();
+			this.epc = sb.toString().substring(0,(int) Math.ceil((8+6+36+(partNumber.length()+1+serial.length()+1)*6)/4f)); //this op is to get the minimum size epc
         }
         return epc;
     }

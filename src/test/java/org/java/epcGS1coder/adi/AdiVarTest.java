@@ -1,5 +1,8 @@
 package org.java.epcGS1coder.adi;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,17 +28,8 @@ public class AdiVarTest {
     }
 
     @Test
-    public void testLong(){
-        long result = 0;
-        int offset = 64;
-        result+=(long)(0b00111011)<<(offset-=8);
-        result+=(long)(3)<<(offset-=6);
-        result+=(long)(32)<<(offset-=6);
-        result+=(long)(51)<<(offset-=6);
-        result+=(long)(53)<<(offset-=6);
-        result+=(long)(57)<<(offset-=6);
-        result+=(long)(54)<<(offset-=6);
-        result+=(long)(50)<<(offset-=6);
-        System.out.println(String.format("%X",result));
+    public void moarTest(){
+        Assert.assertEquals("urn:epc:tag:adi-var:3.35962.PQ7VZ4.M37GXB9243G", AdiVar.fromEpc("3B0E0CF5E76C9047759AD00373DC7602E72D331C0000").getUri());
+        Assert.assertTrue(Pattern.matches("3B0E0CF5E76C9047759AD00373DC7602E72D331C0*", AdiVar.fromUri("urn:epc:tag:adi-var:3.35962.PQ7VZ4.M37GXB9243G").getEpc().toUpperCase()));
     }
 }
