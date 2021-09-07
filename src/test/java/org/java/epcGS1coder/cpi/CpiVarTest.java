@@ -1,5 +1,7 @@
 package org.java.epcGS1coder.cpi;
 
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,12 +20,12 @@ public class CpiVarTest {
 
     @Test
     public void fromUri(){
-        Assert.assertEquals("3D1878AC34DB800000D7D829C000",CpiVar.fromUri("urn:epc:tag:cpi-var:0.123568.468.56582311").getEpc().toUpperCase());
+        Assert.assertTrue(Pattern.matches("3D1878AC34DB800000D7D829C0*", CpiVar.fromUri("urn:epc:tag:cpi-var:0.123568.468.56582311").getEpc().toUpperCase()));
     }
 
     @Test
     public void fromFieldsTest(){
-        Assert.assertEquals("3D1878AC34DB800000D7D829C000",CpiVar.fromFields(0,6,123568,"468",56582311l).getEpc().toUpperCase());
+        Assert.assertTrue(Pattern.matches("3D1878AC34DB800000D7D829C0*", CpiVar.fromFields(0,6,123568,"468",56582311l).getEpc().toUpperCase()));
     }
 
     @Test
@@ -40,7 +42,7 @@ public class CpiVarTest {
         Assert.assertEquals("3D1BD08FF9E79E7903A352943FFC",CpiVar.fromGs1Key(0,6,"99999999999",999999999999l).getEpc().toUpperCase());
         Assert.assertEquals("3D1BD08FF9E40E8D4A50FFF0",CpiVar.fromGs1Key(0,6,"99999999",999999999999l).getEpc().toUpperCase());
 
-        Assert.assertEquals("3D1878AC34DB800000D7D829C000",CpiVar.fromGs1Key(0,6,"123568468",56582311l).getEpc().toUpperCase());
+        Assert.assertTrue(Pattern.matches("3D1878AC34DB800000D7D829C0*", CpiVar.fromGs1Key(0,6,"123568468",56582311l).getEpc().toUpperCase()));
     }
 
     @Test
@@ -52,6 +54,6 @@ public class CpiVarTest {
 
         cpivar= CpiVar.fromGs1Key(3,7,"06141415PQ7/Z43",12345l);
         Assert.assertEquals("urn:epc:tag:cpi-var:3.0614141.5PQ7%2FZ43.12345", cpivar.getUri());
-        Assert.assertEquals("3D74257BF75411DEF6B4CC00000003039", cpivar.getEpc());
+        Assert.assertTrue(Pattern.matches("3D74257BF75411DEF6B4CC000000030390*", cpivar.getEpc()));
     }
 }
