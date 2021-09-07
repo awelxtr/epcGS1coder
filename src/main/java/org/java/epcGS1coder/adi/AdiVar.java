@@ -7,7 +7,7 @@ import java.util.BitSet;
 public class AdiVar {
     private final static byte epcHeader = 0b00111011;
     private final static byte cageSize = 5;
-	private static final String uriHeader = "urn:epc:tag:adi-var:";
+    private static final String uriHeader = "urn:epc:tag:adi-var:";
 
     private AdiFilter filter;
     private String cage;
@@ -51,40 +51,40 @@ public class AdiVar {
                 epc.set(i, ((epcHeader >> j) & 1)==1);
             
             for (int j = 0,i=epcBitSize-(8+6); j < 6; j++,i++)
-				epc.set(i, ((filter.getValue() >> j) & 1)==1);
+                epc.set(i, ((filter.getValue() >> j) & 1)==1);
 
             int i = epcBitSize-(8+6+1);
 
             for (int t : (" " + cage).chars().map(c -> getCageCodeByte((char) c)).toArray()){
                 byte b = (byte) t;
                 for (int j = 5; j >= 0; j--,i--)
-					epc.set(i, ((b >> j) & 1) == 1);
+                    epc.set(i, ((b >> j) & 1) == 1);
             }
 
             for(int t = 0; t<partNumber.length();t++){
                 byte b = partNumber.getBytes()[t];
-				for (int j = 5; j >= 0; j--,i--)
-					epc.set(i, ((b >> j) & 1) == 1);
-			}
+                for (int j = 5; j >= 0; j--,i--)
+                    epc.set(i, ((b >> j) & 1) == 1);
+            }
 
             for (int j = 0;j<6;i--,j++)
                 epc.clear(i);
 
             for(int t = 0; t<serial.length();t++){
                 byte b = serial.getBytes()[t];
-				for (int j = 5; j >= 0; j--,i--)
-					epc.set(i, ((b >> j) & 1) == 1);
-			}
+                for (int j = 5; j >= 0; j--,i--)
+                    epc.set(i, ((b >> j) & 1) == 1);
+            }
 
             for (int j = 0;j<6;i--,j++) 
                 epc.clear(i);
             
             byte[] epcba = epc.toByteArray();
-			StringBuffer sb = new StringBuffer(epcba.length*2);
-			for (i = epcba.length - 1; i>=0; i--)
-				sb.append(String.format("%02X",epcba[i]));
+            StringBuffer sb = new StringBuffer(epcba.length*2);
+            for (i = epcba.length - 1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
 
-			this.epc = sb.toString().substring(0,(int) Math.ceil((8+6+36+(partNumber.length()+1+serial.length()+1)*6)/4f)); //this op is to get the minimum size epc
+            this.epc = sb.toString().substring(0,(int) Math.ceil((8+6+36+(partNumber.length()+1+serial.length()+1)*6)/4f)); //this op is to get the minimum size epc
         }
         return epc;
     }
@@ -118,9 +118,9 @@ public class AdiVar {
 
     public static AdiVar fromUri(String uri){
         if (!uri.startsWith(uriHeader))
-			throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
 
-		String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
+        String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
         String cage = uriParts[1];
         String partNumber = uriParts[2];
@@ -133,55 +133,55 @@ public class AdiVar {
         if (epc.length()%2 !=0)
             epc+="0";
         ArrayList<String> a = new ArrayList<String>();
-		for (int i = 0; i<epc.length(); i+=2) {
-			a.add(epc.substring(i, i+2));
-		}
+        for (int i = 0; i<epc.length(); i+=2) {
+            a.add(epc.substring(i, i+2));
+        }
         int epcBitSize= ((epc.length()*4)/8 + ((epc.length()*4)%8))*8;
-		ByteBuffer bb = ByteBuffer.allocate(epcBitSize);
-		for (int i = a.size() - 1; i>=0;i--)
-			bb.put((byte) Integer.parseInt(a.get(i),16));
-		bb.rewind();
+        ByteBuffer bb = ByteBuffer.allocate(epcBitSize);
+        for (int i = a.size() - 1; i>=0;i--)
+            bb.put((byte) Integer.parseInt(a.get(i),16));
+        bb.rewind();
 
-		BitSet bs = BitSet.valueOf(bb);
+        BitSet bs = BitSet.valueOf(bb);
 
-		int i;
-		long tmp;
+        int i;
+        long tmp;
 
-		for(tmp = 0, i = epcBitSize; (i = bs.previousSetBit(i-1)) > epcBitSize - 8 - 1;)
-			tmp+=1L<<(i-(epcBitSize-8));
-		if (tmp != epcHeader)
-			throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+        for(tmp = 0, i = epcBitSize; (i = bs.previousSetBit(i-1)) > epcBitSize - 8 - 1;)
+            tmp+=1L<<(i-(epcBitSize-8));
+        if (tmp != epcHeader)
+            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = epcBitSize - 8; (i = bs.previousSetBit(i-1)) > epcBitSize - 8 - 6 - 1;)
-			tmp+=1L<<(i-(epcBitSize-8-6));
-		int filter = (int) tmp;
+            tmp+=1L<<(i-(epcBitSize-8-6));
+        int filter = (int) tmp;
 
         byte[] tmpba;
 
         StringBuilder cageBuilder = new StringBuilder("");
-		i=epcBitSize-8-6;
+        i=epcBitSize-8-6;
         if (bs.get(i-6,i).toByteArray()[0] != 32) // the encoded CAGE starts with a ' ' 
             throw new RuntimeException("CAGE code incorrectly encoded");
         i-=6;  
         for(int j = 0;j < cageSize && (tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6,j++)
-			cageBuilder.append(getCageCodeChar(tmpba[0]));
+            cageBuilder.append(getCageCodeChar(tmpba[0]));
         String cage = cageBuilder.toString();
 
         StringBuilder partNumberBuilder = new StringBuilder();
-		for(;(tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6){
+        for(;(tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6){
             if (tmpba[0]>=0b000001 && tmpba[0] <= 0b011010) // Encoded [A-Z] => Table G-1 Characters Permitted in 6-bit Alphanumeric Fields
-				tmpba[0]|=0b01000000;	
-            partNumberBuilder.append(new String(tmpba));	
+                tmpba[0]|=0b01000000;    
+            partNumberBuilder.append(new String(tmpba));    
         }
-		String partNumber = partNumberBuilder.toString();
+        String partNumber = partNumberBuilder.toString();
 
         StringBuilder serialBuilder = new StringBuilder();
-		for(i-=6;(tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6){
+        for(i-=6;(tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6){
             if (tmpba[0]>=0b000001 && tmpba[0] <= 0b011010) // Encoded [A-Z] => Table G-1 Characters Permitted in 6-bit Alphanumeric Fields
-				tmpba[0]|=0b01000000;
-			serialBuilder.append(new String(tmpba));
+                tmpba[0]|=0b01000000;
+            serialBuilder.append(new String(tmpba));
         }
-		String serial = serialBuilder.toString();
+        String serial = serialBuilder.toString();
 
         AdiVar adiVar = new AdiVar(filter, cage, partNumber, serial);
         adiVar.setEpc(epc);
