@@ -93,7 +93,7 @@ public class AdiVar {
         }
         return epc;
     }
-    void setEpc(String epc){
+    private void setEpc(String epc){
         this.epc = epc;
     }
 
