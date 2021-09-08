@@ -21,11 +21,11 @@ public class CpiVar extends Cpi{
     private long serial;
     private String uri = null;
 
-    CpiVar(int filter,
-           int companyPrefixDigits,
-           long companyPrefix,
-           String componentPartReference,
-           long serial){
+    private CpiVar(int filter,
+                   int companyPrefixDigits,
+                   long companyPrefix,
+                   String componentPartReference,
+                   long serial){
         this.filter = CpiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         this.companyPrefix = companyPrefix;

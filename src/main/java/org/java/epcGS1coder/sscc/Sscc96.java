@@ -22,10 +22,10 @@ public class Sscc96 {
 
     private String uri = null;
 
-    Sscc96(int filter,
-            int companyPrefixDigits,
-            long companyPrefix,
-            long serialReference){
+    private Sscc96(int filter,
+                   int companyPrefixDigits,
+                   long companyPrefix,
+                   long serialReference){
         this.filter = SsccFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         this.companyPrefix = companyPrefix;

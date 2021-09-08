@@ -17,7 +17,7 @@ public class AdiVar {
     private String epc = null;
     private String uri = null;
 
-    AdiVar(int filter,
+    private AdiVar(int filter,
             String cage,
             String partNumber,
             String serial){

@@ -21,11 +21,11 @@ public class Sgln96 extends Sgln {
     private int locationReference;
     private long extension;
 
-    Sgln96(int filter,
-           int companyPrefixDigits,
-           long companyPrefix,
-           int locationReference,
-           long extension){
+    private Sgln96(int filter,
+                   int companyPrefixDigits,
+                   long companyPrefix,
+                   int locationReference,
+                   long extension){
         this.filter = SglnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         this.companyPrefix = companyPrefix;

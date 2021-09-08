@@ -8,178 +8,178 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Sgcn96 {
     private final static byte epcHeader = 0b00111111;
-	private final static int serialSize = 41;
+    private final static int serialSize = 41;
     private final static byte serialMaxChars = 12;
-	private final static String uriHeader = "urn:epc:tag:sgcn-96:";
-	
-	private BitSet epc;
-	
-	private byte partition;
-	private SgcnFilter filter;
-	private long companyPrefix;
-	private int couponReference;
-	private String serial;
-	private String uri = null;
+    private final static String uriHeader = "urn:epc:tag:sgcn-96:";
+    
+    private BitSet epc;
+    
+    private byte partition;
+    private SgcnFilter filter;
+    private long companyPrefix;
+    private int couponReference;
+    private String serial;
+    private String uri = null;
 
-	Sgcn96(int filter,
-		   int companyPrefixDigits,
-		   long companyPrefix,
-		   int couponReference,
-		   String serial){
-		this.filter = SgcnFilter.values()[filter];
-		this.partition = (byte) getPartition(companyPrefixDigits);
-		this.companyPrefix = companyPrefix;
-		this.couponReference = couponReference;
-		if (!StringUtils.isNumeric(serial) || serial.length() > serialMaxChars)
-			throw new RuntimeException("Serial must be numeric and shorter than 12 digits");
-		this.serial = serial;
-	}
+    private Sgcn96(int filter,
+                   int companyPrefixDigits,
+                   long companyPrefix,
+                   int couponReference,
+                   String serial){
+        this.filter = SgcnFilter.values()[filter];
+        this.partition = (byte) getPartition(companyPrefixDigits);
+        this.companyPrefix = companyPrefix;
+        this.couponReference = couponReference;
+        if (!StringUtils.isNumeric(serial) || serial.length() > serialMaxChars)
+            throw new RuntimeException("Serial must be numeric and shorter than 12 digits");
+        this.serial = serial;
+    }
 
-	public static Sgcn96 fromFields(int filter,
-									int companyPrefixDigits,
-									long companyPrefix,
-									int couponReference,
-									String serial){
-		return new Sgcn96(filter, companyPrefixDigits, companyPrefix, couponReference, serial);
-	}
+    public static Sgcn96 fromFields(int filter,
+                                    int companyPrefixDigits,
+                                    long companyPrefix,
+                                    int couponReference,
+                                    String serial){
+        return new Sgcn96(filter, companyPrefixDigits, companyPrefix, couponReference, serial);
+    }
 
-	public static Sgcn96 fromGs1Key(int filter,int companyPrefixDigits, String ai255) {
+    public static Sgcn96 fromGs1Key(int filter,int companyPrefixDigits, String ai255) {
         if (ai255.length()<14 || ai255.length()>25 || !StringUtils.isNumeric(ai255))
-			throw new RuntimeException("GCN with serial must be between 14 and 25 digits long");
+            throw new RuntimeException("GCN with serial must be between 14 and 25 digits long");
 
         return new Sgcn96(filter, companyPrefixDigits, Long.parseLong(ai255.substring(0, companyPrefixDigits)), Integer.parseInt(ai255.substring(companyPrefixDigits, 13 - 1)), ai255.substring(13));
-	}
+    }
 
-	public String getEpc() {
-		if (epc == null){
-			epc = new BitSet(96); 
-			int i = 0;
+    public String getEpc() {
+        if (epc == null){
+            epc = new BitSet(96); 
+            int i = 0;
 
-			long serial = Long.parseLong("1"+this.serial); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
+            long serial = Long.parseLong("1"+this.serial); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
 
-			for (int j = 0; j < serialSize; j++,i++)
-				epc.set(i, ((serial >> j) & 1)==1);
+            for (int j = 0; j < serialSize; j++,i++)
+                epc.set(i, ((serial >> j) & 1)==1);
 
-			for (int j = 0; j < getCouponReferenceBits(partition); j++,i++)
-				epc.set(i, ((couponReference >> j) & 1)==1);
+            for (int j = 0; j < getCouponReferenceBits(partition); j++,i++)
+                epc.set(i, ((couponReference >> j) & 1)==1);
 
-			for (int j = 0; j < getCompanyPrefixBits(partition); j++,i++)
-				epc.set(i, ((companyPrefix >> j) & 1)==1);
+            for (int j = 0; j < getCompanyPrefixBits(partition); j++,i++)
+                epc.set(i, ((companyPrefix >> j) & 1)==1);
 
-			for (int j = 0; j < 3; j++,i++)
-				epc.set(i, ((partition >> j) & 1)==1);
+            for (int j = 0; j < 3; j++,i++)
+                epc.set(i, ((partition >> j) & 1)==1);
 
-			for (int j = 0; j < 3; j++,i++)
-				epc.set(i, ((filter.getValue() >> j) & 1)==1);
+            for (int j = 0; j < 3; j++,i++)
+                epc.set(i, ((filter.getValue() >> j) & 1)==1);
 
-			for (int j = 0; j < 8; j++,i++)
-				epc.set(i, ((epcHeader >> j) & 1)==1);
-		}
-		byte[] epcba = epc.toByteArray();
-		StringBuffer sb = new StringBuffer(44);
-		for (int i = epcba.length-1; i>=0; i--)
-			sb.append(String.format("%02X",epcba[i]));
+            for (int j = 0; j < 8; j++,i++)
+                epc.set(i, ((epcHeader >> j) & 1)==1);
+        }
+        byte[] epcba = epc.toByteArray();
+        StringBuffer sb = new StringBuffer(44);
+        for (int i = epcba.length-1; i>=0; i--)
+            sb.append(String.format("%02X",epcba[i]));
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 
-	public int getFilter() {
-		return filter.getValue();
-	}
+    public int getFilter() {
+        return filter.getValue();
+    }
 
-	public long getCompanyPrefix() {
-		return companyPrefix;
-	}
+    public long getCompanyPrefix() {
+        return companyPrefix;
+    }
 
-	public int getCouponReference() {
-		return couponReference;
-	}
+    public int getCouponReference() {
+        return couponReference;
+    }
 
-	public String getSerial() {
-		return serial;
-	}
+    public String getSerial() {
+        return serial;
+    }
 
-	public String getUri() {
-		if (uri == null)
-			uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getCouponReferenceDigits(partition)+"d",couponReference)+"."+serial;
-		return uri;
-	}
+    public String getUri() {
+        if (uri == null)
+            uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getCouponReferenceDigits(partition)+"d",couponReference)+"."+serial;
+        return uri;
+    }
 
-	void setEpc(BitSet epc){ this.epc = epc; }
-	void setUri(String uri){ this.uri = uri; }
+    void setEpc(BitSet epc){ this.epc = epc; }
+    void setUri(String uri){ this.uri = uri; }
 
-	public static Sgcn96 fromUri(String uri) {
-		if (!uri.startsWith(uriHeader))
-			throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+    public static Sgcn96 fromUri(String uri) {
+        if (!uri.startsWith(uriHeader))
+            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
 
-		String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
-		int filter = Integer.parseInt(uriParts[0]);
-		byte partition = (byte) getPartition(uriParts[1].length());
-		long companyPrefix = Long.parseLong(uriParts[1]);
-		int documentType = Integer.parseInt(uriParts[2]);
+        String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
+        int filter = Integer.parseInt(uriParts[0]);
+        byte partition = (byte) getPartition(uriParts[1].length());
+        long companyPrefix = Long.parseLong(uriParts[1]);
+        int documentType = Integer.parseInt(uriParts[2]);
 
-		String serial = uriParts[3];
-		StringBuilder sb = new StringBuilder();
-		String[] serialSplit = serial.split("%");
-		sb.append(serialSplit[0]);
-		for (int i = 1; i < serialSplit.length; i++){
-			sb.append((char) Integer.parseInt(serialSplit[i].substring(0,2),16));
-			sb.append(serialSplit[i].substring(2));
-		}
+        String serial = uriParts[3];
+        StringBuilder sb = new StringBuilder();
+        String[] serialSplit = serial.split("%");
+        sb.append(serialSplit[0]);
+        for (int i = 1; i < serialSplit.length; i++){
+            sb.append((char) Integer.parseInt(serialSplit[i].substring(0,2),16));
+            sb.append(serialSplit[i].substring(2));
+        }
 
-		Sgcn96 sgcn96 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,sb.toString());
-		sgcn96.setUri(uri);
-		return sgcn96;
-	}
+        Sgcn96 sgcn96 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,sb.toString());
+        sgcn96.setUri(uri);
+        return sgcn96;
+    }
 
-	public static Sgcn96 fromEpc(String epc) {
-		ArrayList<String> a = new ArrayList<String>();
-		for (int i = 0; i<epc.length(); i+=2) {
-			a.add(epc.substring(i, i+2));
-		}
+    public static Sgcn96 fromEpc(String epc) {
+        ArrayList<String> a = new ArrayList<String>();
+        for (int i = 0; i<epc.length(); i+=2) {
+            a.add(epc.substring(i, i+2));
+        }
 
-		ByteBuffer bb = ByteBuffer.allocate(12);
-		for (int i = a.size() - 1; i>=0;i--)
-			bb.put((byte) Integer.parseInt(a.get(i),16));
-		bb.rewind();
+        ByteBuffer bb = ByteBuffer.allocate(12);
+        for (int i = a.size() - 1; i>=0;i--)
+            bb.put((byte) Integer.parseInt(a.get(i),16));
+        bb.rewind();
 
-		BitSet bs = BitSet.valueOf(bb);
+        BitSet bs = BitSet.valueOf(bb);
 
-		int i;
-		long tmp;
+        int i;
+        long tmp;
 
-		for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
-			tmp+=1L<<(i-(96-8));
-		if (tmp != epcHeader)
-			throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+        for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
+            tmp+=1L<<(i-(96-8));
+        if (tmp != epcHeader)
+            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
-		for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
-			tmp+=1L<<(i-(96-8-3));
-		int filter = (int) tmp;
+        for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
+            tmp+=1L<<(i-(96-8-3));
+        int filter = (int) tmp;
 
-		for(tmp = 0, i = 96 - 8 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - 1;)
-			tmp+=1L<<(i-(96-8-3-3));
-		byte partition = (byte) tmp;
+        for(tmp = 0, i = 96 - 8 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - 1;)
+            tmp+=1L<<(i-(96-8-3-3));
+        byte partition = (byte) tmp;
 
-		byte cpb = getCompanyPrefixBits(partition);
-		for(tmp = 0, i = 96 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - 1;)
-			tmp+=1L<<(i-(96-8-3-3-cpb));
-		long companyPrefix = tmp;
+        byte cpb = getCompanyPrefixBits(partition);
+        for(tmp = 0, i = 96 - 8 - 3 - 3; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - 1;)
+            tmp+=1L<<(i-(96-8-3-3-cpb));
+        long companyPrefix = tmp;
 
-		byte crb = getCouponReferenceBits(partition);
-		for(tmp = 0, i = 96 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - crb - 1;)
-			tmp+=1L<<(i-(96-8-3-3-cpb-crb));
-		int documentType = (int) tmp;
+        byte crb = getCouponReferenceBits(partition);
+        for(tmp = 0, i = 96 - 8 - 3 - 3 - cpb; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 3 - cpb - crb - 1;)
+            tmp+=1L<<(i-(96-8-3-3-cpb-crb));
+        int documentType = (int) tmp;
 
-		//for the remainder, which is the serial, we can use fixed values
-		for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
-			tmp+=1L<<i;
-		String serial = String.valueOf(tmp).substring(1); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
+        //for the remainder, which is the serial, we can use fixed values
+        for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
+            tmp+=1L<<i;
+        String serial = String.valueOf(tmp).substring(1); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
 
-		Sgcn96 sgcn96 = new Sgcn96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-		sgcn96.setEpc(bs);
-		return sgcn96;
-	}
+        Sgcn96 sgcn96 = new Sgcn96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
+        sgcn96.setEpc(bs);
+        return sgcn96;
+    }
 
     /**
      * Table 14-28 SGCN Partition Table
