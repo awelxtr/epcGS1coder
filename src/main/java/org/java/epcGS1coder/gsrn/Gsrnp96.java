@@ -86,6 +86,11 @@ public class Gsrnp96 extends Gsrn{
         this.uri = uri;
     };
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Gsrnp96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

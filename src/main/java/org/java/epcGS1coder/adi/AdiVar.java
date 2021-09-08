@@ -39,8 +39,13 @@ public class AdiVar {
         if (cageByte >= 0b00110000 && cageByte <= 0b00111001) // [0-9] (0x30 <-> 0x39)
             return (char) cageByte;
         return (char) (cageByte|0b01000000);
-     }
-   
+    }
+
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public String getEpc() {
         if (epc == null){
             int epcBitSize = 8+6+36+(partNumber.length()+1+serial.length()+1)*6;

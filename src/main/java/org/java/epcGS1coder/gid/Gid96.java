@@ -76,6 +76,11 @@ public class Gid96 {
         this.uri = uri;
     };
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Gid96 fromFields(int generalManagerNumber,
                                    int objectClass,
                                    long serial){

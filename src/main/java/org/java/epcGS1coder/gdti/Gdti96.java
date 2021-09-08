@@ -97,6 +97,11 @@ public class Gdti96 extends Gdti{
         this.uri = uri;
     };
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Gdti96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

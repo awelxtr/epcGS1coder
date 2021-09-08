@@ -118,6 +118,11 @@ public class Sgtin198 extends Sgtin {
         return uri;
     }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     void setEpc(BitSet epc){ this.epc = epc; }
     void setUri(String uri){ this.uri = uri; }
 

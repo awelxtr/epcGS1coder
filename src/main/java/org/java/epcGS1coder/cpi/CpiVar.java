@@ -120,6 +120,11 @@ public class CpiVar extends Cpi{
         return uri;
     }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     void setEpc(String epc){ this.epc = epc; }
     void setUri(String uri){ this.uri = uri; }
 

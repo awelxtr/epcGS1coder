@@ -79,6 +79,11 @@ public class Sgln96 extends Sgln {
     }
     void setUri(String uri) { this.uri = uri; }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Sgln96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

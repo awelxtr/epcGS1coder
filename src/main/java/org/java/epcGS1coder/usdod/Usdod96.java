@@ -82,6 +82,11 @@ public class Usdod96 {
         return uri;
     }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public String getGovernmentManagedIdentifier() {
         return governmentManagedIdentifier;
     }

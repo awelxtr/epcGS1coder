@@ -93,9 +93,15 @@ public class Grai96 extends Grai {
             uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getAssetTypeDigits(partition)+"d",assetType)+"."+String.valueOf(serial);
         return uri;
     }
+    
     void setUri(String uri){
         this.uri = uri;
     };
+
+    @Override
+    public String toString(){
+        return getUri();
+    }
 
     public static Grai96 fromFields(int filter,
                                     int companyPrefixDigits,

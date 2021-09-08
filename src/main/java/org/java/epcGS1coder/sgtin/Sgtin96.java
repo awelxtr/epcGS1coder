@@ -108,6 +108,11 @@ public class Sgtin96 extends Sgtin{
         this.uri = uri;
     };
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Sgtin96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

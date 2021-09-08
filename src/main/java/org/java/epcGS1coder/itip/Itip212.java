@@ -122,6 +122,11 @@ public class Itip212 extends Itip{
         this.uri = uri;
     };
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Itip212 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

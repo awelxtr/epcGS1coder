@@ -105,6 +105,11 @@ public class Sgcn96 {
         return uri;
     }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     void setEpc(BitSet epc){ this.epc = epc; }
     void setUri(String uri){ this.uri = uri; }
 

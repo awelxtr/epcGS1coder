@@ -128,6 +128,11 @@ public class Sscc96 {
         return uri;
     }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public String getEpc(){
         if (epc == null ){
             BitSet epc = new BitSet(96);

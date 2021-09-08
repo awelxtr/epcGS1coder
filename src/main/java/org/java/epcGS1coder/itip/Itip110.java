@@ -117,6 +117,11 @@ public class Itip110 extends Itip {
         this.uri = uri;
     };
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     public static Itip110 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

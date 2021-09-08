@@ -178,6 +178,11 @@ public class Cpi96 extends Cpi{
         return cpi96;
     }
 
+    @Override
+    public String toString(){
+        return getUri();
+    }
+
     /**
      * Table 14-20 CPI-96 Partition Table
      * @param partition
