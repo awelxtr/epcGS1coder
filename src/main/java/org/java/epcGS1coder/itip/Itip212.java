@@ -85,7 +85,7 @@ public class Itip212 extends Itip{
         return epc;
     }
 
-    void setEpc(String epc) {
+    private void setEpc(String epc) {
         this.epc = epc;
     }
     
@@ -118,7 +118,7 @@ public class Itip212 extends Itip{
             uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getIndicatorPadDigitItemReferenceDigits(partition)+"d",indicatorPadDigitItemReference)+"."+String.format("%02d",piece)+"."+String.format("%02d",total)+"."+serial.chars().mapToObj(c -> getUriSerialChar((char) c)).collect(Collectors.joining());
         return uri;
     }
-    void setUri(String uri){
+    private void setUri(String uri){
         this.uri = uri;
     };
 

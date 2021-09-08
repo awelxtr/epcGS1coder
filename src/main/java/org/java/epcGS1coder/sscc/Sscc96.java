@@ -105,7 +105,9 @@ public class Sscc96 {
         byte partition = (byte) getPartition(uriParts[1].length());
         long companyPrefix = Long.parseLong(uriParts[1]);
         long serialReference = Long.parseLong(uriParts[2]);
-        return new Sscc96(filter,getCompanyPrefixDigits(partition),companyPrefix,serialReference);
+        Sscc96 sscc96 = new Sscc96(filter,getCompanyPrefixDigits(partition),companyPrefix,serialReference);
+        sscc96.setUri(uri);
+        return sscc96;
     }
 
     public int getFilter() {
@@ -120,7 +122,8 @@ public class Sscc96 {
         return serialReference;
     }
 
-    void setEpc(String epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
+    private void setUri(String uri){ this.uri = uri; }
     public String getUri() {
         if (uri == null){
             uri = tagUriHeader+filter.getValue()+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix)+"."+String.format("%0"+getSerialReferenceDigits(partition)+"d",serialReference);

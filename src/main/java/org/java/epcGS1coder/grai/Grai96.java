@@ -68,7 +68,7 @@ public class Grai96 extends Grai {
         return epc;
     }
 
-    void setEpc(String epc) {
+    private void setEpc(String epc) {
         this.epc = epc;
     }
     
@@ -94,7 +94,7 @@ public class Grai96 extends Grai {
         return uri;
     }
     
-    void setUri(String uri){
+    private void setUri(String uri){
         this.uri = uri;
     };
 

@@ -110,8 +110,8 @@ public class Sgcn96 {
         return getUri();
     }
 
-    void setEpc(BitSet epc){ this.epc = epc; }
-    void setUri(String uri){ this.uri = uri; }
+    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setUri(String uri){ this.uri = uri; }
 
     public static Sgcn96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))

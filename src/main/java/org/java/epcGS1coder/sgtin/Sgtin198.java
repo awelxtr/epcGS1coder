@@ -123,8 +123,8 @@ public class Sgtin198 extends Sgtin {
         return getUri();
     }
 
-    void setEpc(BitSet epc){ this.epc = epc; }
-    void setUri(String uri){ this.uri = uri; }
+    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setUri(String uri){ this.uri = uri; }
 
 
 

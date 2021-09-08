@@ -53,7 +53,7 @@ public class Gid96 {
         return epc;
     }
 
-    void setEpc(String epc) {
+    private void setEpc(String epc) {
         this.epc = epc;
     }
 
@@ -72,7 +72,7 @@ public class Gid96 {
             uri = uriHeader+String.valueOf(generalManagerNumber)+"."+String.valueOf(objectClass)+"."+String.valueOf(serial);
         return uri;
     }
-    void setUri(String uri){
+    private void setUri(String uri){
         this.uri = uri;
     };
 

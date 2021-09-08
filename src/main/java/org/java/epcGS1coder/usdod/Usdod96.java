@@ -71,8 +71,12 @@ public class Usdod96 {
         }
         return epc;
     }
-    void setEpc(String epc){
+    private void setEpc(String epc){
         this.epc = epc;
+    }
+
+    private void setUri(String uri){
+        this.uri = uri;
     }
 
     public String getUri() {
@@ -108,8 +112,9 @@ public class Usdod96 {
         int filter = Integer.parseInt(uriParts[0]);
         String governmentManagedIdentifier = uriParts[1];
         long serial = Long.parseLong(uriParts[2]);
-
-        return fromFields(filter, governmentManagedIdentifier, serial);
+        Usdod96 usdod96 = fromFields(filter, governmentManagedIdentifier, serial);
+        usdod96.setUri(uri);
+        return usdod96;
     }
 
     public static Usdod96 fromEpc(String epc){

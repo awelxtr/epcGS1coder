@@ -113,8 +113,8 @@ public class Grai170 extends Grai{
         return getUri();
     }
 
-    void setEpc(BitSet epc){ this.epc = epc; }
-    void setUri(String uri){ this.uri = uri; }
+    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setUri(String uri){ this.uri = uri; }
 
     /**
      * Table A-1 for the encoding

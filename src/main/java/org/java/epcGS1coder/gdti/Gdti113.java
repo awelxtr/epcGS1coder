@@ -110,8 +110,8 @@ public class Gdti113 extends Gdti {
         return getUri();
     }
 
-    void setEpc(BitSet epc){ this.epc = epc; }
-    void setUri(String uri){ this.uri = uri; }
+    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setUri(String uri){ this.uri = uri; }
 
     public static Gdti113 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))

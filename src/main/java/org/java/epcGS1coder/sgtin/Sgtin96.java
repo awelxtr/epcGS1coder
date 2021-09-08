@@ -79,7 +79,7 @@ public class Sgtin96 extends Sgtin{
         return epc;
     }
 
-    void setEpc(String epc) {
+    private void setEpc(String epc) {
         this.epc = epc;
     }
     
@@ -104,7 +104,7 @@ public class Sgtin96 extends Sgtin{
             uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getItemReferenceDigits(partition)+"d",itemReference)+"."+String.valueOf(serial);
         return uri;
     }
-    void setUri(String uri){
+    private void setUri(String uri){
         this.uri = uri;
     };
 

@@ -66,7 +66,7 @@ public class Sgln96 extends Sgln {
         return epc;
     }
 
-    void setEpc(String epc) { this.epc = epc; }
+    private void setEpc(String epc) { this.epc = epc; }
     public int getFilter() { return filter.getValue(); }
     public long getCompanyPrefix() { return companyPrefix; }
     public int getLocationReference() { return locationReference; }
@@ -77,7 +77,7 @@ public class Sgln96 extends Sgln {
             uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getLocationReferenceDigits(partition)+"d",locationReference)+"."+String.valueOf(extension);
         return uri;
     }
-    void setUri(String uri) { this.uri = uri; }
+    private void setUri(String uri) { this.uri = uri; }
 
     @Override
     public String toString(){

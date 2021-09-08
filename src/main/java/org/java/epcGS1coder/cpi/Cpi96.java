@@ -68,7 +68,7 @@ public class Cpi96 extends Cpi{
         return epc;
     }
 
-    void setEpc(String epc) {
+    private void setEpc(String epc) {
         this.epc = epc;
     }
     
@@ -93,7 +93,7 @@ public class Cpi96 extends Cpi{
             uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+componentPartReference+"."+String.valueOf(serial);
         return uri;
     }
-    void setUri(String uri){
+    private void setUri(String uri){
         this.uri = uri;
     };
 

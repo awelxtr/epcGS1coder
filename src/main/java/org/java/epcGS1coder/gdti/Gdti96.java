@@ -68,7 +68,7 @@ public class Gdti96 extends Gdti{
         return epc;
     }
 
-    void setEpc(String epc) {
+    private void setEpc(String epc) {
         this.epc = epc;
     }
     
@@ -93,7 +93,7 @@ public class Gdti96 extends Gdti{
             uri = uriHeader+String.valueOf(filter.getValue())+"."+String.format("%0"+getCompanyPrefixDigits(partition)+"d",companyPrefix) +"."+String.format("%0"+getDocumentTypeDigits(partition)+"d",documentType)+"."+String.valueOf(serial);
         return uri;
     }
-    void setUri(String uri){
+    private void setUri(String uri){
         this.uri = uri;
     };
 

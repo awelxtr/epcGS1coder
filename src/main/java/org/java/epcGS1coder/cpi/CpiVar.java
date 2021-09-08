@@ -125,8 +125,8 @@ public class CpiVar extends Cpi{
         return getUri();
     }
 
-    void setEpc(String epc){ this.epc = epc; }
-    void setUri(String uri){ this.uri = uri; }
+    private void setEpc(String epc){ this.epc = epc; }
+    private void setUri(String uri){ this.uri = uri; }
 
     public static CpiVar fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
