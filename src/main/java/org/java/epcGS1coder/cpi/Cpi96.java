@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Cpi96 extends Cpi{
+public final class Cpi96 extends Cpi{
 
     private final static byte epcHeader = 0b00111100;
     private final static byte serialSize = 31;

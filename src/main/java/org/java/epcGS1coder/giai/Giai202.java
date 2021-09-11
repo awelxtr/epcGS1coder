@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Giai202 extends Giai{
+public final class Giai202 extends Giai{
     private final static byte epcHeader = 0b00111000;
     private final static int padding = 6;
     private final static byte serialMaxChars = 24;

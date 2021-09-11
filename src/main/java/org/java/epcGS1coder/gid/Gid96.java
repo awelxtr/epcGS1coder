@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class Gid96 {
+public final class Gid96 {
     private final static byte epcHeader = 0b00110101;
     private final static byte generalManagerNumberSize = 28;
     private final static byte objectClassSize = 24;

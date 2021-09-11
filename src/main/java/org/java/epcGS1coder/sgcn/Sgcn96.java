@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Sgcn96 {
+public final class Sgcn96 {
     private final static byte epcHeader = 0b00111111;
     private final static int serialSize = 41;
     private final static byte serialMaxChars = 12;

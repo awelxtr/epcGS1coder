@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Gdti113 extends Gdti {
+public final class Gdti113 extends Gdti {
     private final static byte epcHeader = 0b00111010;
     private final static int serialSize = 58;
     private final static int padding = (32*4)-113; // GDTI-113 epc is 32 hex chars long

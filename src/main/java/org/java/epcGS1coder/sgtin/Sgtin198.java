@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  *
  */
 
-public class Sgtin198 extends Sgtin {
+public final class Sgtin198 extends Sgtin {
 
     private final static byte epcHeader = 0b00110110;
     private final static int serialSize = 140;

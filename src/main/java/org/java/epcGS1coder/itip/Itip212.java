@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Itip212 extends Itip{
+public final class Itip212 extends Itip{
     private final static byte epcHeader = 0b01000001;
     private final static int serialSize = 140;
     private final static byte serialMaxChars = 20;

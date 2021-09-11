@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  *
  */
 
-public class Sgln195 extends Sgln {
+public final class Sgln195 extends Sgln {
 
     private final static byte epcHeader = 0b00111001;
     private final static int extensionSize = 140;

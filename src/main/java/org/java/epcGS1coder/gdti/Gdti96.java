@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Gdti96 extends Gdti{
+public final class Gdti96 extends Gdti{
 
     private final static byte epcHeader = 0b00101100;
     private final static byte serialSize = 41;

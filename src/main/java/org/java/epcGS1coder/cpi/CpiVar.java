@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.stream.Collectors;
 
-public class CpiVar extends Cpi{
+public final class CpiVar extends Cpi{
     
     private final static byte epcHeader = 0b00111101;
     private final static int serialSize = 40;

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class AdiVar {
+public final class AdiVar {
     private final static byte epcHeader = 0b00111011;
     private final static byte cageSize = 5;
     private static final String uriHeader = "urn:epc:tag:adi-var:";

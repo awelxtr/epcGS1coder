@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Gsrnp96 extends Gsrn{
+public final class Gsrnp96 extends Gsrn{
 
     private final static byte epcHeader = 0b00101110;
     private final static String uriHeader = "urn:epc:tag:gsrnp-96:";

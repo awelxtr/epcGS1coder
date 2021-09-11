@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Grai170 extends Grai{
+public final class Grai170 extends Grai{
     private final static byte epcHeader = 0b00110111;
     private final static int serialSize = 112;
     private final static byte serialMaxChars = 16;

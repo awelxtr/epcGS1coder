@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Gdti174 extends Gdti {
+public final class Gdti174 extends Gdti {
     private final static byte epcHeader = 0b00111110;
     private final static int serialSize = 119;
     private final static int padding = (44*4)-174;

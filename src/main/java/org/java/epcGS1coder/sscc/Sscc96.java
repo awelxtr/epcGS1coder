@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class Sscc96 {
+public final class Sscc96 {
 
     private static final byte epcHeader = 0b00110001;
     private static final byte reservedSize = 24;

@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  */
 
-public class Sgtin96 extends Sgtin{
+public final class Sgtin96 extends Sgtin{
 
     private final static byte epcHeader = 0b00110000;
     private final static byte serialSize = 38;

@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Sgln96 extends Sgln {
+public final class Sgln96 extends Sgln {
 
     private final static byte epcHeader = 0b00110010;
     private static final String uriHeader = "urn:epc:tag:sgln-96:";

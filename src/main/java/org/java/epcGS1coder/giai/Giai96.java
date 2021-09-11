@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Giai96 extends Giai {
+public final class Giai96 extends Giai {
 
     private final static byte epcHeader = 0b00110100;
     private static final String uriHeader = "urn:epc:tag:giai-96:";

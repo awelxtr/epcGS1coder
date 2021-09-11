@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Grai96 extends Grai {
+public final class Grai96 extends Grai {
 
     private final static byte epcHeader = 0b00110011;
     private final static byte serialSize = 38;

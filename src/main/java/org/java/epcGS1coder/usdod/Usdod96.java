@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class Usdod96 {
+public final class Usdod96 {
     private final static byte epcHeader = 0b00101111;
     private final static byte serialSize = 36;
     private final static byte governmentManagedIdentifierSize = 6;

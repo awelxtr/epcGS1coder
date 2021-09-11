@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Itip110 extends Itip {
+public final class Itip110 extends Itip {
     private final static byte epcHeader = 0b01000000;
     private final static byte serialSize = 38;
     private final static int padding = 2;
