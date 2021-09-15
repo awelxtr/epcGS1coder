@@ -10,11 +10,6 @@ import org.apache.commons.lang3.StringUtils;
  * The Serialised Global Trade Item Number EPC scheme is used to assign a unique
  * identity to an instance of a trade item, such as a specific instance 
  * of a product or SKU.
- *
- * SGTIN Table data: Table 14-3 SGTIN-96, line 3591, page 106
- * 
- * @author awel
- *
  */
 
 public final class Sgtin96 extends Sgtin{

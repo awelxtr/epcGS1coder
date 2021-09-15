@@ -5,6 +5,14 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.stream.Collectors;
 
+/**
+ * The Component / Part EPC identifier is designed for use by the technical industries (including the
+ * automotive sector) for the unique identification of parts or components.
+ * 
+ * The CPI EPC construct provides a mechanism to directly encode unique identifiers in RFID tags and
+ * to use the URI representations at other layers of the EPCglobal architecture.
+ */
+
 public final class CpiVar extends Cpi{
     
     private final static byte epcHeader = 0b00111101;

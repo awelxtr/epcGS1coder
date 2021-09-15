@@ -6,6 +6,11 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The SGLN EPC scheme is used to assign a unique identity to a physical location, such as a specific
+ * building or a specific unit of shelving within a warehouse.
+ */
+
 public final class Sgln96 extends Sgln {
 
     private final static byte epcHeader = 0b00110010;

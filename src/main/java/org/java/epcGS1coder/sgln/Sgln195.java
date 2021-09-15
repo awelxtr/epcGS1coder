@@ -8,12 +8,8 @@ import java.util.BitSet;
 import java.util.stream.Collectors;
 
 /**
- * The Extensionised Global Trade Item Number EPC scheme is used to assign a unique
- * identity to an instance of a trade item, such as a specific instance 
- * of a product or SKU.
- * 
- * @author awel
- *
+ * The SGLN EPC scheme is used to assign a unique identity to a physical location, such as a specific
+ * building or a specific unit of shelving within a warehouse.
  */
 
 public final class Sgln195 extends Sgln {

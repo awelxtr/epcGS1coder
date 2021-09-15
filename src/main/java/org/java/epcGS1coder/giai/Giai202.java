@@ -7,6 +7,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Global Individual Asset Identifier EPC scheme is used to assign a unique identity to a specific
+ * asset, such as a forklift or a computer.
+ */
+
 public final class Giai202 extends Giai{
     private final static byte epcHeader = 0b00111000;
     private final static int padding = 6;

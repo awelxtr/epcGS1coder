@@ -6,6 +6,11 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Global Service Relation Number EPC scheme is used to assign a unique identity to a service
+ * recipient.
+ */
+
 public final class Gsrn96 extends Gsrn{
 
     private final static byte epcHeader = 0b00101101;

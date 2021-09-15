@@ -7,6 +7,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Global Returnable Asset Identifier EPC scheme is used to assign a unique identity to a specific
+ * returnable asset, such as a reusable shipping container or a pallet skid.
+ */
+
 public final class Grai170 extends Grai{
     private final static byte epcHeader = 0b00110111;
     private final static int serialSize = 112;

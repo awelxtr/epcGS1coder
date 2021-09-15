@@ -7,6 +7,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Global Document Type Identifier EPC scheme is used to assign a unique identity to a specific
+ * document, such as land registration papers, an insurance policy, and others.
+ */
+
 public final class Gdti174 extends Gdti {
     private final static byte epcHeader = 0b00111110;
     private final static int serialSize = 119;

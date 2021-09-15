@@ -6,6 +6,12 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Individual Trade Item Piece EPC scheme is used to assign a unique identity to a subordinate
+ * element of a trade item (e.g., left and right shoes, suit trousers and jacket, DIY trade item consisting
+ * of several physical units), the latter of which comprises multiple pieces.
+ */
+
 public final class Itip110 extends Itip {
     private final static byte epcHeader = 0b01000000;
     private final static byte serialSize = 38;

@@ -4,6 +4,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
+/**
+ * <p>The US Department of Defense identifier is defined by the United States Department of Defense. This tag data construct may be used to encode 96-bit Class 1 tags for shipping goods to the United States Department of Defense by a supplier who has already been assigned a CAGE (Commercial and Government Entity) code. </p>
+ * <p>At the time of this writing, the details of what information to encode into these fields is explained in a document titled "United States Department of Defense Supplier's Passive RFID Information Guide" that can be obtained at the United States Department of Defense's web site (http://www.dodrfid.org/supplierguide.htm). </p>
+ * <p>Note that the DoD Guide explicitly recognises the value of cross-branch, globally applicable standards, advising that "suppliers that are EPCglobal subscribers and possess a unique [GS1] Company Prefix may use any of the identity types and encoding instructions described in the EPC™ Tag Data Standards document to encode tags."</p>
+ */
+
 public final class Usdod96 {
     private final static byte epcHeader = 0b00101111;
     private final static byte serialSize = 36;

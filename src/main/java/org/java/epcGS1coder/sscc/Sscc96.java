@@ -6,6 +6,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
+/**
+ * The Serial Shipping Container Code EPC scheme is used to assign a unique identity to a logistics 
+ * handling unit, such as the aggregate contents of a shipping container or a pallet load.
+ */
+
 public final class Sscc96 {
 
     private static final byte epcHeader = 0b00110001;

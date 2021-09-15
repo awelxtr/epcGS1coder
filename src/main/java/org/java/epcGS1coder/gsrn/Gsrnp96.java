@@ -6,6 +6,11 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Global Service Relation Number – Provider (GSRNP) EPC scheme is used to assign a unique
+ * identity to a service provider.
+ */
+
 public final class Gsrnp96 extends Gsrn{
 
     private final static byte epcHeader = 0b00101110;

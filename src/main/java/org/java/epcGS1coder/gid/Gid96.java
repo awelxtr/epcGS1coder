@@ -4,6 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
+/**
+ * The General Identifier EPC scheme is independent of any specifications or identity scheme outside
+ * the EPCglobal Tag Data Standard.
+ */
+
 public final class Gid96 {
     private final static byte epcHeader = 0b00110101;
     private final static byte generalManagerNumberSize = 28;

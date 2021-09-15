@@ -11,9 +11,6 @@ import java.util.stream.Collectors;
  * The Serialised Global Trade Item Number EPC scheme is used to assign a unique
  * identity to an instance of a trade item, such as a specific instance 
  * of a product or SKU.
- * 
- * @author awel
- *
  */
 
 public final class Sgtin198 extends Sgtin {

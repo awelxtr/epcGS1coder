@@ -6,6 +6,10 @@ import java.util.BitSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * The Global Coupon Number EPC scheme is used to assign a unique identity to a coupon.
+ */
+
 public final class Sgcn96 {
     private final static byte epcHeader = 0b00111111;
     private final static int serialSize = 41;

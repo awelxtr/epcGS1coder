@@ -4,6 +4,25 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
+/**
+ * <p>The variable-length Aerospace and Defense EPC identifier is designed for use by the aerospace and  defense sector for the unique identification of parts or items. The existing unique identifier  constructs are defined in the Air Transport Association (ATA) Spec 2000 standard [SPEC2000], and  the US Department of Defense Guide to Uniquely Identifying items [UID]. The ADI EPC construct  provides a mechanism to directly encode such unique identifiers in RFID tags and to use the URI  representations at other layers of the EPCglobal architecture. </p>
+ * <p>Within the Aerospace & Defense sector identification constructs supported by the ADI EPC,  companies are uniquely identified by their Commercial And Government Entity (CAGE) code or by  their Department of Defense Activity Address Code (DODAAC). The NATO CAGE (NCAGE) code is  issued by NATO / Allied Committee 135 and is structurally equivalent to a CAGE code (five character  uppercase alphanumeric excluding capital letters I and O) and is non-colliding with CAGE codes  issued by the US Defense Logistics Information Service (DLIS). Note that in the remainder of this  section, all references to CAGE apply equally to NCAGE. </p>
+ * <p>ATA Spec 2000 defines that a unique identifier may be constructed through the combination of the  CAGE code or DODAAC together with either: 
+ * <ul>
+ *  <li> A serial number (SER) that is assigned uniquely within the CAGE code or DODAAC; or </li>
+ *  <li> An original part number (PNO) that is unique within the CAGE code or DODAAC and a sequential  serial number (SEQ) that is uniquely assigned within that original part number. </li>
+ * </ul>
+ * The US DoD Guide to Uniquely Identifying Items defines a number of acceptable methods for  constructing unique item identifiers (UIIs). The UIIs that can be represented using the Aerospace  and Defense EPC identifier are those that are constructed through the combination of a CAGE code  or DODAAC together with either: 
+ * <ul>
+ *  <li> a serial number that is unique within the enterprise identifier. (UII Construct #1) </li>
+ *  <li> an original part number and a serial number that is unique within the original part number (a  subset of UII Construct #2) </li>
+ * </ul>
+ * <p>Note that the US DoD UID guidelines recognise a number of unique identifiers based on GS1  identifier keys as being valid UIDs. In particular, the SGTIN (GTIN + Serial Number), GIAI, and  GRAI with full serialisation are recognised as valid UIDs. These may be represented in EPC form  using the SGTIN, GIAI, and GRAI EPC schemes as specified in Sections 6.3.1, 6.3.5, and 6.3.4,  respectively; the ADI EPC scheme is not used for this purpose. Conversely, the US DoD UID  guidelines also recognise a wide range of enterprise identifiers issued by various issuing agencies  other than those described above; such UIDs do not have a corresponding EPC representation. </p>
+ * <p>For purposes of identification via RFID of those aircraft parts that are traditionally not serialised or  not required to be serialised for other purposes, the ADI EPC scheme may be used for assigning a  unique identifier to a part. In this situation, the first character of the serial number component of  the ADI EPC SHALL be a single '#' character. This is used to indicate that the serial number does not  correspond to the serial number of a traditionally serialised part because the '#' character is not  permitted to appear within the values associated with either the SER or SEQ text element identifiers  in ATA Spec 2000 standard. </p>
+ * <p>For parts that are traditionally serialised / required to be serialised for purposes other than having a  unique RFID identifier, and for all usage within US DoD UID guidelines, the '#' character SHALL NOT  appear within the serial number element. </p>
+ * <p>The ATA Spec 2000 standard recommends that companies serialise uniquely within their CAGE code.  For companies who do serialise uniquely within their CAGE code or DODAAC, a zero-length string  SHALL be used in place of the Original Part Number element when constructing an EPC.</p>
+ */
+
 public final class AdiVar {
     private final static byte epcHeader = 0b00111011;
     private final static byte cageSize = 5;
