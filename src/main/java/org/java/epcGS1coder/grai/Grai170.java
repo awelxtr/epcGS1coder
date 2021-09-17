@@ -19,7 +19,7 @@ public final class Grai170 extends Grai{
     private final static int padding = 6;
     private final static String uriHeader = "urn:epc:tag:grai-170:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private GraiFilter filter;
@@ -59,7 +59,7 @@ public final class Grai170 extends Grai{
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(44*4); //Grai-170 epc is 44 hex chars long
+            BitSet epc = new BitSet(44*4); //Grai-170 epc is 44 hex chars long
             int i = serialSize+padding-1;
 
             for (byte b : serial.getBytes()) {
@@ -82,13 +82,14 @@ public final class Grai170 extends Grai{
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(44);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
         }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(44);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
-
-        return sb.toString();
+        
+        return epc;
     }
 
     public int getFilter() {
@@ -125,7 +126,7 @@ public final class Grai170 extends Grai{
         return getUri();
     }
 
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     /**
@@ -221,7 +222,7 @@ public final class Grai170 extends Grai{
         String serial = serialBuilder.toString();
 
         Grai170 grai170 = new Grai170(filter,getCompanyPrefixDigits(partition),companyPrefix,assetType,serial);
-        grai170.setEpc(bs);
+        grai170.setEpc(epc);
         return grai170;
     }
 }

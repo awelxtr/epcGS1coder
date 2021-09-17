@@ -16,7 +16,7 @@ public final class Sgcn96 {
     private final static byte serialMaxChars = 12;
     private final static String uriHeader = "urn:epc:tag:sgcn-96:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private SgcnFilter filter;
@@ -56,7 +56,7 @@ public final class Sgcn96 {
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(96); 
+            BitSet epc = new BitSet(96); 
             int i = 0;
 
             long serial = Long.parseLong("1"+this.serial); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
@@ -78,13 +78,15 @@ public final class Sgcn96 {
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
-        }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(44);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
 
-        return sb.toString();
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(44);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
+        }
+
+        return epc;
     }
 
     public int getFilter() {
@@ -121,7 +123,7 @@ public final class Sgcn96 {
         return ((Sgcn96) o).getUri().equals(getUri());
     }
 
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     public static Sgcn96 fromUri(String uri) {
@@ -193,7 +195,7 @@ public final class Sgcn96 {
         String serial = String.valueOf(tmp).substring(1); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
 
         Sgcn96 sgcn96 = new Sgcn96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        sgcn96.setEpc(bs);
+        sgcn96.setEpc(epc);
         return sgcn96;
     }
 

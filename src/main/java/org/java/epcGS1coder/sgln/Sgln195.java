@@ -20,7 +20,7 @@ public final class Sgln195 extends Sgln {
     private final static byte serialMaxChars = 20;
     private final static String uriHeader = "urn:epc:tag:sgln-195:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private SglnFilter filter;
@@ -60,7 +60,7 @@ public final class Sgln195 extends Sgln {
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(52*4); //Sgln-195 epc is 52 hex chars long
+            BitSet epc = new BitSet(52*4); //Sgln-195 epc is 52 hex chars long
             int i = extensionSize+padding-1;
 
             for (byte b : extension.getBytes()) {
@@ -83,13 +83,15 @@ public final class Sgln195 extends Sgln {
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
+            
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(52);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
         }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(52);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
-
-        return sb.toString();
+        
+        return epc;
     }
 
     public int getFilter() {
@@ -126,7 +128,7 @@ public final class Sgln195 extends Sgln {
         return ((Sgln195) o).getUri().equals(getUri());
     }
     
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     /**
@@ -222,7 +224,7 @@ public final class Sgln195 extends Sgln {
         String extension = extensionBuilder.toString();
 
         Sgln195 sgln195 = new Sgln195(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,extension);
-        sgln195.setEpc(bs);
+        sgln195.setEpc(epc);
         return sgln195;
     }
 

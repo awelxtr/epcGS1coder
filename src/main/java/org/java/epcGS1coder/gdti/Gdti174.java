@@ -19,7 +19,7 @@ public final class Gdti174 extends Gdti {
     private final static byte serialMaxChars = 17;
     private final static String uriHeader = "urn:epc:tag:gdti-174:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private GdtiFilter filter;
@@ -57,7 +57,7 @@ public final class Gdti174 extends Gdti {
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(44*4); //Gdti-174 epc is 44 hex chars long
+            BitSet epc = new BitSet(44*4); //Gdti-174 epc is 44 hex chars long
             int i = serialSize+padding-1;
 
             for (byte b : serial.getBytes()) {
@@ -80,13 +80,15 @@ public final class Gdti174 extends Gdti {
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
+            
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(44);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
         }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(44);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
-
-        return sb.toString();
+        
+        return epc;
     }
 
     public int getFilter() {
@@ -123,7 +125,7 @@ public final class Gdti174 extends Gdti {
         return ((Gdti174) o).getUri().equals(getUri());
     }
     
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     /**
@@ -219,7 +221,7 @@ public final class Gdti174 extends Gdti {
         String serial = serialBuilder.toString();
 
         Gdti174 gdti174 = new Gdti174(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        gdti174.setEpc(bs);
+        gdti174.setEpc(epc);
         return gdti174;
     }
 }

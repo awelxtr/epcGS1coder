@@ -18,7 +18,7 @@ public final class Giai202 extends Giai{
     private final static byte serialMaxChars = 24;
     private final static String uriHeader = "urn:epc:tag:giai-202:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private GiaiFilter filter;
@@ -54,7 +54,7 @@ public final class Giai202 extends Giai{
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(52*4); //Giai-202 epc is 52 hex chars long
+            BitSet epc = new BitSet(52*4); //Giai-202 epc is 52 hex chars long
             int i = getIndividualAssetReferenceBits(partition)+padding-1;
 
             for (byte b : individualAssetReference.getBytes()) {
@@ -74,13 +74,15 @@ public final class Giai202 extends Giai{
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(44);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
         }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(44);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
+        
 
-        return sb.toString();
+        return epc;
     }
 
     public int getFilter() {
@@ -113,7 +115,7 @@ public final class Giai202 extends Giai{
         return ((Giai202) o).getUri().equals(getUri());
     }
 
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     /**
@@ -202,7 +204,7 @@ public final class Giai202 extends Giai{
         String individualAssetReference = individualAssetReferenceBuilder.toString();
 
         Giai202 giai202 = new Giai202(filter,getCompanyPrefixDigits(partition),companyPrefix,individualAssetReference);
-        giai202.setEpc(bs);
+        giai202.setEpc(epc);
         return giai202;
     }
 

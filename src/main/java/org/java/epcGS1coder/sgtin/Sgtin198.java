@@ -21,7 +21,7 @@ public final class Sgtin198 extends Sgtin {
     private final static byte serialMaxChars = 20;
     private final static String uriHeader = "urn:epc:tag:sgtin-198:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private SgtinFilter filter;
@@ -61,7 +61,7 @@ public final class Sgtin198 extends Sgtin {
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(52*4); //Sgtin-198 epc is 52 hex chars long
+            BitSet epc = new BitSet(52*4); //Sgtin-198 epc is 52 hex chars long
             int i = serialSize+padding-1;
 
             for (byte b : serial.getBytes()) {
@@ -84,13 +84,14 @@ public final class Sgtin198 extends Sgtin {
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(52);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
         }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(52);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
-
-        return sb.toString();
+        
+        return epc;
     }
 
     public int getFilter() {
@@ -120,7 +121,7 @@ public final class Sgtin198 extends Sgtin {
         return getUri();
     }
 
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     @Override
@@ -223,7 +224,7 @@ public final class Sgtin198 extends Sgtin {
         String serial = serialBuilder.toString();
 
         Sgtin198 sgtin198 = new Sgtin198(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
-        sgtin198.setEpc(bs);
+        sgtin198.setEpc(epc);
         return sgtin198;
     }
 

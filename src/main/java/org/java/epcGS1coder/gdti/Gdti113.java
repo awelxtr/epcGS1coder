@@ -17,7 +17,7 @@ public final class Gdti113 extends Gdti {
     private final static int padding = (32*4)-113; // GDTI-113 epc is 32 hex chars long
     private final static String uriHeader = "urn:epc:tag:gdti-113:";
     
-    private BitSet epc;
+    private String epc;
     
     private byte partition;
     private GdtiFilter filter;
@@ -57,7 +57,7 @@ public final class Gdti113 extends Gdti {
 
     public String getEpc() {
         if (epc == null){
-            epc = new BitSet(32*4); // GDTI-113 epc is 32 hex chars long
+            BitSet epc = new BitSet(32*4); // GDTI-113 epc is 32 hex chars long
             int i = padding;
 
             long serial = Long.parseLong("1"+this.serial); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
@@ -79,13 +79,15 @@ public final class Gdti113 extends Gdti {
 
             for (int j = 0; j < 8; j++,i++)
                 epc.set(i, ((epcHeader >> j) & 1)==1);
+            
+            byte[] epcba = epc.toByteArray();
+            StringBuffer sb = new StringBuffer(44);
+            for (i = epcba.length-1; i>=0; i--)
+                sb.append(String.format("%02X",epcba[i]));
+            this.epc = sb.toString();
         }
-        byte[] epcba = epc.toByteArray();
-        StringBuffer sb = new StringBuffer(44);
-        for (int i = epcba.length-1; i>=0; i--)
-            sb.append(String.format("%02X",epcba[i]));
-
-        return sb.toString();
+        
+        return epc;
     }
 
     public int getFilter() {
@@ -122,7 +124,7 @@ public final class Gdti113 extends Gdti {
         return ((Gdti113) o).getUri().equals(getUri());
     }
 
-    private void setEpc(BitSet epc){ this.epc = epc; }
+    private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
     public static Gdti113 fromUri(String uri) {
@@ -194,7 +196,7 @@ public final class Gdti113 extends Gdti {
         String serial = String.valueOf(tmp).substring(1); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
 
         Gdti113 gdti113 = new Gdti113(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        gdti113.setEpc(bs);
+        gdti113.setEpc(epc);
         return gdti113;
     }
 }
