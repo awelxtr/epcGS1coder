@@ -114,6 +114,13 @@ public final class Grai170 extends Grai{
     }
 
     @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Grai170))
+            return false;
+        return ((Grai170) o).getUri().equals(getUri());
+    }
+
+    @Override
     public String toString(){
         return getUri();
     }

@@ -191,6 +191,13 @@ public final class Cpi96 extends Cpi{
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Cpi96))
+            return false;
+        return ((Cpi96) o).getUri().equals(getUri());
+    }
+
     /**
      * Table 14-20 CPI-96 Partition Table
      * @param partition

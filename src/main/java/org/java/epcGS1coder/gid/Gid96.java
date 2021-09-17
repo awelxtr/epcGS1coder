@@ -86,6 +86,13 @@ public final class Gid96 {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Gid96))
+            return false;
+        return ((Gid96) o).getUri().equals(getUri());
+    }
+
     public static Gid96 fromFields(int generalManagerNumber,
                                    int objectClass,
                                    long serial){

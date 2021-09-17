@@ -141,6 +141,13 @@ public final class Sscc96 {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Sscc96))
+            return false;
+        return ((Sscc96) o).getUri().equals(getUri());
+    }
+
     public String getEpc(){
         if (epc == null ){
             BitSet epc = new BitSet(96);

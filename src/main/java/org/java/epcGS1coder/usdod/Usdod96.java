@@ -97,6 +97,13 @@ public final class Usdod96 {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Usdod96))
+            return false;
+        return ((Usdod96) o).getUri().equals(getUri());
+    }
+
     public String getGovernmentManagedIdentifier() {
         return governmentManagedIdentifier;
     }

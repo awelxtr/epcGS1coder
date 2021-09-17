@@ -108,6 +108,13 @@ public final class Sgtin96 extends Sgtin{
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Sgtin96))
+            return false;
+        return ((Sgtin96) o).getUri().equals(getUri());
+    }
+
     public static Sgtin96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

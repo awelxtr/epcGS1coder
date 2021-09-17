@@ -118,6 +118,13 @@ public final class Sgln195 extends Sgln {
     public String toString(){
         return getUri();
     }
+
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Sgln195))
+            return false;
+        return ((Sgln195) o).getUri().equals(getUri());
+    }
     
     private void setEpc(BitSet epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }

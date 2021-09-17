@@ -114,6 +114,13 @@ public final class Sgcn96 {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Sgcn96))
+            return false;
+        return ((Sgcn96) o).getUri().equals(getUri());
+    }
+
     private void setEpc(BitSet epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 

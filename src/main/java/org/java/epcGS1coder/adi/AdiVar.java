@@ -212,6 +212,13 @@ public final class AdiVar {
         return adiVar;
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof AdiVar))
+            return false;
+        return ((AdiVar) o).getUri().equals(getUri());
+    }
+
     enum AdiFilter {
         all_others(0),
         item_1(1),

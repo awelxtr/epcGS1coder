@@ -96,6 +96,13 @@ public final class Gsrn96 extends Gsrn{
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Gsrn96))
+            return false;
+        return ((Gsrn96) o).getUri().equals(getUri());
+    }
+
     public static Gsrn96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

@@ -115,6 +115,13 @@ public final class Gdti113 extends Gdti {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Gdti113))
+            return false;
+        return ((Gdti113) o).getUri().equals(getUri());
+    }
+
     private void setEpc(BitSet epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 

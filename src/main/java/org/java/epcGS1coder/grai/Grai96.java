@@ -108,6 +108,13 @@ public final class Grai96 extends Grai {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Grai96))
+            return false;
+        return ((Grai96) o).getUri().equals(getUri());
+    }
+
     public static Grai96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

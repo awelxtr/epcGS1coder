@@ -89,6 +89,13 @@ public final class Sgln96 extends Sgln {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Sgln96))
+            return false;
+        return ((Sgln96) o).getUri().equals(getUri());
+    }
+
     public static Sgln96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

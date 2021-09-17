@@ -107,6 +107,13 @@ public final class Gdti96 extends Gdti{
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Gdti96))
+            return false;
+        return ((Gdti96) o).getUri().equals(getUri());
+    }
+
     public static Gdti96 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

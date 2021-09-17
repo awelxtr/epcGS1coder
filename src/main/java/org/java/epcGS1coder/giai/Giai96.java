@@ -126,6 +126,13 @@ public final class Giai96 extends Giai {
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Giai96))
+            return false;
+        return ((Giai96) o).getUri().equals(getUri());
+    }
+
     public static Giai96 fromEpc(String epc) {
         ArrayList<String> a = new ArrayList<String>();
         for (int i = 0; i<epc.length(); i+=2) {

@@ -132,6 +132,13 @@ public final class CpiVar extends Cpi{
     public String toString(){
         return getUri();
     }
+    
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof CpiVar))
+            return false;
+        return ((CpiVar) o).getUri().equals(getUri());
+    }
 
     private void setEpc(String epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }

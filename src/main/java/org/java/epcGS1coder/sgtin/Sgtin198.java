@@ -123,7 +123,12 @@ public final class Sgtin198 extends Sgtin {
     private void setEpc(BitSet epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
-
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Sgtin198))
+            return false;
+        return ((Sgtin198) o).getUri().equals(getUri());
+    }
 
     /**
      * Table A-1 for the encoding

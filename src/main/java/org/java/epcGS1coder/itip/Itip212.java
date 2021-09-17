@@ -133,6 +133,13 @@ public final class Itip212 extends Itip{
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Itip212))
+            return false;
+        return ((Itip212) o).getUri().equals(getUri());
+    }
+
     public static Itip212 fromFields(int filter,
                                     int companyPrefixDigits,
                                     long companyPrefix,

@@ -106,6 +106,13 @@ public final class Giai202 extends Giai{
         return getUri();
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Giai202))
+            return false;
+        return ((Giai202) o).getUri().equals(getUri());
+    }
+
     private void setEpc(BitSet epc){ this.epc = epc; }
     private void setUri(String uri){ this.uri = uri; }
 
