@@ -22,7 +22,11 @@ public final class Gsrnp96 extends Gsrn{
                     long serviceReference){
         this.filter = GsrnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (serviceReference >= 1l<<getServiceReferenceBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getServiceReferenceBits(partition)));
         this.serviceReference = serviceReference;
     }
 
@@ -172,8 +176,12 @@ public final class Gsrnp96 extends Gsrn{
             tmp+=1L<<(i-(96-8-3-3-cpb-srb));
         long serviceReference = tmp;
 
-        Gsrnp96 gsrnp96 = new Gsrnp96(filter,getCompanyPrefixDigits(partition),companyPrefix,serviceReference);
-        gsrnp96.setEpc(epc);
-        return gsrnp96;
+        try{
+            Gsrnp96 gsrnp96 = new Gsrnp96(filter,getCompanyPrefixDigits(partition),companyPrefix,serviceReference);
+            gsrnp96.setEpc(epc);
+            return gsrnp96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

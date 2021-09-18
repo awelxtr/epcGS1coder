@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 public final class Gdti113 extends Gdti {
     private final static byte epcHeader = 0b00111010;
     private final static int serialSize = 58;
+    private final static int serialMaxChars = 17;
     private final static int padding = (32*4)-113; // GDTI-113 epc is 32 hex chars long
     private final static String uriHeader = "urn:epc:tag:gdti-113:";
     
@@ -33,10 +34,14 @@ public final class Gdti113 extends Gdti {
                     String serial){
         this.filter = GdtiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (documentType >= 1l<<getDocumentTypeBits(partition))
+            throw new RuntimeException("Document Type too large, max value (exclusive):" + (1l<<getDocumentTypeBits(partition)));
         this.documentType = documentType;
-        if (!StringUtils.isNumeric(serial))
-            throw new RuntimeException("Serial must be numeric");
+        if (serial.length() > serialMaxChars || !StringUtils.isNumeric(serial))
+            throw new RuntimeException("Serial must be at most 17 numeric characters");
         this.serial = serial;
     }
 
@@ -195,8 +200,12 @@ public final class Gdti113 extends Gdti {
             tmp+=1L<<(i-padding);
         String serial = String.valueOf(tmp).substring(1); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
 
-        Gdti113 gdti113 = new Gdti113(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        gdti113.setEpc(epc);
-        return gdti113;
+        try{
+            Gdti113 gdti113 = new Gdti113(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
+            gdti113.setEpc(epc);
+            return gdti113;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

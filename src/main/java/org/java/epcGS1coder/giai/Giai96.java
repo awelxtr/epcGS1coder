@@ -32,7 +32,11 @@ public final class Giai96 extends Giai {
                    long individualAssetReference){
         this.filter = GiaiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (individualAssetReference >= 1l<<getIndividualAssetReferenceBits(partition))
+            throw new RuntimeException("Individual Asset Reference too large, max value (exclusive):" + (1l<<getIndividualAssetReferenceBits(partition)));
         this.individualAssetReference = individualAssetReference;
     }
 
@@ -172,9 +176,13 @@ public final class Giai96 extends Giai {
             tmp+=1L<<(i-(96-8-3-3-cpb-irb));
         int individualAssetReference = (int) tmp;
 
-        Giai96 grai96 = new Giai96(filter,getCompanyPrefixDigits(partition),companyPrefix,individualAssetReference);
-        grai96.setEpc(epc);
-        return grai96;
+        try{
+            Giai96 grai96 = new Giai96(filter,getCompanyPrefixDigits(partition),companyPrefix,individualAssetReference);
+            grai96.setEpc(epc);
+            return grai96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     /**

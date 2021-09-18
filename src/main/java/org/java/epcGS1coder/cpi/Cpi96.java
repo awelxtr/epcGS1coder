@@ -38,8 +38,14 @@ public final class Cpi96 extends Cpi{
                   long serial){
         this.filter = CpiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (componentPartReference >= 1l<<getComponentPartReferenceBits(partition))
+            throw new RuntimeException("Component Part Reference too large, max value (exclusive):" + (1l<<getComponentPartReferenceBits(partition)));
         this.componentPartReference = componentPartReference;
+        if (serial >= 1l<<serialSize)
+            throw new RuntimeException("Serial too large, max value (exclusive):" + (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -115,7 +121,7 @@ public final class Cpi96 extends Cpi{
 
     public static Cpi96 fromGs1Key(int filter,int companyPrefixDigits, String ai8010, long ai8011) {
         if (ai8010.length()<7 || ai8010.length()>30 || !StringUtils.isNumeric(ai8010))
-            throw new RuntimeException("CPI must be 14 digits long");
+            throw new RuntimeException("CPI must be between 7 and 30 digits long");
         return new Cpi96(filter, companyPrefixDigits, Long.parseLong(ai8010.substring(0, companyPrefixDigits)), Integer.parseInt(ai8010.substring(companyPrefixDigits)), ai8011);
     }
 
@@ -181,9 +187,13 @@ public final class Cpi96 extends Cpi{
             tmp+=1L<<i;
         long serial = tmp;
 
-        Cpi96 cpi96 = new Cpi96(filter,getCompanyPrefixDigits(partition),companyPrefix,componentPartReference,serial);
-        cpi96.setEpc(epc);
-        return cpi96;
+        try{
+            Cpi96 cpi96 = new Cpi96(filter,getCompanyPrefixDigits(partition),companyPrefix,componentPartReference,serial);
+            cpi96.setEpc(epc);
+            return cpi96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     @Override

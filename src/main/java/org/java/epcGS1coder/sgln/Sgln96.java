@@ -33,8 +33,14 @@ public final class Sgln96 extends Sgln {
                    long extension){
         this.filter = SglnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (locationReference >= 1l<<getLocationReferenceBits(partition))
+            throw new RuntimeException("Location Reference too large, max value (exclusive):" + (1l<<getLocationReferenceBits(partition)));
         this.locationReference = locationReference;
+        if (extension >= 1l<<extensionSize)
+            throw new RuntimeException("Extension too large, max value (exclusive):" + (1l<<extensionSize));
         this.extension = extension;
     }
 
@@ -105,7 +111,7 @@ public final class Sgln96 extends Sgln {
     }
 
     public static Sgln96 fromGs1Key(int filter,int companyPrefixDigits, String ai414, long ai254) {
-        if (ai414.length()<13 || !StringUtils.isNumeric(ai414))
+        if (ai414.length()!=13 || !StringUtils.isNumeric(ai414))
             throw new RuntimeException("GLN must be 13 digits long");
         return new Sgln96(filter, companyPrefixDigits, Long.parseLong(ai414.substring(0, companyPrefixDigits)), Integer.parseInt(ai414.substring(companyPrefixDigits, 13-1)), ai254);
     }
@@ -170,9 +176,12 @@ public final class Sgln96 extends Sgln {
         for(tmp = 0, i = extensionSize; (i = bs.previousSetBit(i-1)) > -1;)
             tmp+=1L<<i;
         long extension = tmp;
-
-        Sgln96 sgln96 = new Sgln96(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,extension);
-        sgln96.setEpc(epc);
-        return sgln96;
+        try {
+            Sgln96 sgln96 = new Sgln96(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,extension);
+            sgln96.setEpc(epc);
+            return sgln96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

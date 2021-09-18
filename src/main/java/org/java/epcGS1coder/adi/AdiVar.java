@@ -3,6 +3,7 @@ package org.java.epcGS1coder.adi;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.stream.Collectors;
 
 /**
  * <p>The variable-length Aerospace and Defense EPC identifier is designed for use by the aerospace and  defense sector for the unique identification of parts or items. The existing unique identifier  constructs are defined in the Air Transport Association (ATA) Spec 2000 standard [SPEC2000], and  the US Department of Defense Guide to Uniquely Identifying items [UID]. The ADI EPC construct  provides a mechanism to directly encode such unique identifiers in RFID tags and to use the URI  representations at other layers of the EPCglobal architecture. </p>
@@ -41,8 +42,24 @@ public final class AdiVar {
             String partNumber,
             String serial){
         this.filter = AdiFilter.values()[filter];
+        if (cage.length() != cageSize)
+            throw new RuntimeException("CAGE code must be 5 characters long");
+        for (char ch : cage.toCharArray())
+            getCageCodeByte(ch); // Will throw an exception if the CAGE character is invalid.
         this.cage = cage;
+        if (partNumber.length() > 32)
+            throw new RuntimeException("Part number must be between 0 and 32 characters long");
+        for (char ch : partNumber.toCharArray())
+            if (!((ch>='0' && ch <='9') || (ch>='A' && ch<='Z') || ch == '-' || ch == '/')) //Table G-1 (part number can't contain '#'')
+                throw new RuntimeException("Port number contains invalid character: " + ch);
         this.partNumber = partNumber;
+        if (serial.length() == 0 || serial.length() > 30)
+            throw new RuntimeException("Serial number must be between 1 and 30 characters long");
+        for (char ch : serial.toCharArray())
+            if (!((ch>='0' && ch <='9') || (ch>='A' && ch<='Z') || ch == '#' || ch == '-' || ch == '/')) //Table G-1
+                throw new RuntimeException("Serial contains invalid character: " + ch);
+        if (serial.indexOf('#') > 0)
+            throw new RuntimeException("'#' can only appear at the beggining of the serial");
         this.serial = serial;
     }
 
@@ -118,8 +135,7 @@ public final class AdiVar {
 
     public String getUri() {
         if (uri == null)
-            uri = uriHeader + filter.getValue() + "." + cage + "." + partNumber + "." + String.valueOf(serial);
-
+            uri = uriHeader + filter.getValue() + "." + cage + "." + partNumber + "." + serial.chars().mapToObj(c -> getUriSerialChar((char) c)).collect(Collectors.joining());
         return uri;
     }
 
@@ -149,8 +165,15 @@ public final class AdiVar {
         String cage = uriParts[1];
         String partNumber = uriParts[2];
         String serial = uriParts[3];
+        StringBuilder sb = new StringBuilder();
+        String[] serialSplit = serial.split("%");
+        sb.append(serialSplit[0]);
+        for (int i = 1; i < serialSplit.length; i++){
+            sb.append((char) Integer.parseInt(serialSplit[i].substring(0,2),16));
+            sb.append(serialSplit[i].substring(2));
+        }
 
-        return fromFields(filter, cage, partNumber, serial);
+        return fromFields(filter, cage, partNumber, sb.toString());
     }
 
     public static AdiVar fromEpc(String epc){
@@ -207,9 +230,13 @@ public final class AdiVar {
         }
         String serial = serialBuilder.toString();
 
-        AdiVar adiVar = new AdiVar(filter, cage, partNumber, serial);
-        adiVar.setEpc(epc);
-        return adiVar;
+        try{
+            AdiVar adiVar = new AdiVar(filter, cage, partNumber, serial);
+            adiVar.setEpc(epc);
+            return adiVar;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     @Override
@@ -217,6 +244,18 @@ public final class AdiVar {
         if (!(o instanceof AdiVar))
             return false;
         return ((AdiVar) o).getUri().equals(getUri());
+    }
+
+    /**
+     * Table G-1 for the encoding
+     */
+    private String getUriSerialChar(char ch){
+        if (!((ch>='0' && ch <='9') || (ch>='A' && ch<='Z') || ch == '-' || ch == '/'))
+            throw new RuntimeException("Wrong char");
+        if (ch == '#')
+            return "%23";
+        else 
+            return String.valueOf(ch);
     }
 
     enum AdiFilter {

@@ -32,7 +32,11 @@ public final class Sgcn96 {
                    String serial){
         this.filter = SgcnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (couponReference >= 1l<<getCouponReferenceBits(partition))
+            throw new RuntimeException("Coupon reference too large, max value (exclusive):" + (1l<<getCouponReferenceBits(partition)));
         this.couponReference = couponReference;
         if (!StringUtils.isNumeric(serial) || serial.length() > serialMaxChars)
             throw new RuntimeException("Serial must be numeric and shorter than 12 digits");
@@ -194,9 +198,13 @@ public final class Sgcn96 {
             tmp+=1L<<i;
         String serial = String.valueOf(tmp).substring(1); // Numeric string encoding prepends a "1" at the beginning of the encoded serial
 
-        Sgcn96 sgcn96 = new Sgcn96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        sgcn96.setEpc(epc);
-        return sgcn96;
+        try{
+            Sgcn96 sgcn96 = new Sgcn96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
+            sgcn96.setEpc(epc);
+            return sgcn96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     /**

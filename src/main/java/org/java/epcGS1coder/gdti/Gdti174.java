@@ -2,7 +2,9 @@ package org.java.epcGS1coder.gdti;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,8 @@ public final class Gdti174 extends Gdti {
     private final static int padding = (44*4)-174;
     private final static byte serialMaxChars = 17;
     private final static String uriHeader = "urn:epc:tag:gdti-174:";
+    // Table A-1 specifies the valid characters in serials, this set is to make the validators more maintenable
+    private final static HashSet<Character> invalidTableA1Chars = Arrays.asList(0x23,0x24,0x40,0x5B,0x5C,0x5D,0x5E,0x60).stream().map(Character.class::cast).collect(Collectors.toCollection(HashSet::new));
     
     private String epc;
     
@@ -35,8 +39,17 @@ public final class Gdti174 extends Gdti {
                     String serial){
         this.filter = GdtiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (documentType >= 1l<<getDocumentTypeBits(partition))
+            throw new RuntimeException("Document Type too large, max value (exclusive):" + (1l<<getDocumentTypeBits(partition)));
         this.documentType = documentType;
+        if (serial.length() > serialMaxChars)
+            throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+        for (char ch : serial.toCharArray())
+            if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
+                throw new RuntimeException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -132,7 +145,7 @@ public final class Gdti174 extends Gdti {
      * Table A-1 for the encoding
      */
     private String getUriSerialChar(char ch){
-        if (ch < 0x21 || ch > 0x7A)
+        if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
             throw new RuntimeException("Wrong char");
         switch (ch){
             case '"':
@@ -220,8 +233,12 @@ public final class Gdti174 extends Gdti {
 
         String serial = serialBuilder.toString();
 
-        Gdti174 gdti174 = new Gdti174(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        gdti174.setEpc(epc);
-        return gdti174;
+        try{
+            Gdti174 gdti174 = new Gdti174(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
+            gdti174.setEpc(epc);
+            return gdti174;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

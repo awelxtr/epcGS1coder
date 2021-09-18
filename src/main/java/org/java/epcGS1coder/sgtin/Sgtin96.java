@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 public final class Sgtin96 extends Sgtin{
 
     private final static byte epcHeader = 0b00110000;
-    private final static byte serialSize = 38;
+    private final static byte serialBitSize = 38;
     private static final String uriHeader = "urn:epc:tag:sgtin-96:";
     
     private String epc = null;
@@ -36,8 +36,14 @@ public final class Sgtin96 extends Sgtin{
                     long serial){
         this.filter = SgtinFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (itemReference >= 1l<<getItemReferenceBits(partition))
+            throw new RuntimeException("Item Prefix too large, max value (exclusive):" + (1l<<getItemReferenceBits(partition)));
         this.itemReference = itemReference;
+        if (serial >= 1l<<serialBitSize)
+            throw new RuntimeException("Serial too big, max value: " + ((1l<<serialBitSize)-1));
         this.serial = serial;
     }
 
@@ -46,7 +52,7 @@ public final class Sgtin96 extends Sgtin{
             BitSet epc = new BitSet(96); 
             int i = 0;
 
-            for (int j = 0; j < serialSize; j++,i++)
+            for (int j = 0; j < serialBitSize; j++,i++)
                 epc.set(i, ((serial >> j) & 1)==1);
 
             for (int j = 0; j < getItemReferenceBits(partition); j++,i++)
@@ -124,7 +130,7 @@ public final class Sgtin96 extends Sgtin{
     }
 
     public static Sgtin96 fromGs1Key(int filter,int companyPrefixDigits, String ai01, long ai21) {
-        if (ai01.length()<14 || !StringUtils.isNumeric(ai01))
+        if (ai01.length()!=14 || !StringUtils.isNumeric(ai01))
             throw new RuntimeException("GTIN must be 14 digits long");
         return new Sgtin96(filter, companyPrefixDigits, Long.parseLong(ai01.substring(1, companyPrefixDigits + 1)), Integer.parseInt(ai01.substring(companyPrefixDigits + 1, 14 - 1)), ai21);
     }
@@ -187,12 +193,15 @@ public final class Sgtin96 extends Sgtin{
         int itemReference = (int) tmp;
 
         //for the remainder, which is the serial, we can use fixed values
-        for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
+        for(tmp = 0, i = serialBitSize; (i = bs.previousSetBit(i-1)) > -1;)
             tmp+=1L<<i;
         long serial = tmp;
-
-        Sgtin96 sgtin96 = new Sgtin96(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
-        sgtin96.setEpc(epc);
-        return sgtin96;
+        try {
+            Sgtin96 sgtin96 = new Sgtin96(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
+            sgtin96.setEpc(epc);
+            return sgtin96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

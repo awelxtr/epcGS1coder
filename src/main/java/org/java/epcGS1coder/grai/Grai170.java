@@ -2,7 +2,9 @@ package org.java.epcGS1coder.grai;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,8 @@ public final class Grai170 extends Grai{
     private final static byte serialMaxChars = 16;
     private final static int padding = 6;
     private final static String uriHeader = "urn:epc:tag:grai-170:";
+    // Table A-1 specifies the valid characters in serials, this set is to make the validators more maintenable
+    private final static HashSet<Character> invalidTableA1Chars = Arrays.asList(0x23,0x24,0x40,0x5B,0x5C,0x5D,0x5E,0x60).stream().map(Character.class::cast).collect(Collectors.toCollection(HashSet::new));
     
     private String epc;
     
@@ -35,10 +39,17 @@ public final class Grai170 extends Grai{
                     String serial){
         this.filter = GraiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (assetType >= 1l<<getAssetTypeBits(partition))
+            throw new RuntimeException("Asset Type too large, max value (exclusive):" + (1l<<getAssetTypeBits(partition)));
         this.assetType = assetType;
         if (serial.length() > serialMaxChars)
             throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+        for (char ch : serial.toCharArray())
+            if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
+                throw new RuntimeException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -51,7 +62,7 @@ public final class Grai170 extends Grai{
     }
 
     public static Grai170 fromGs1Key(int filter,int companyPrefixDigits, String ai8003) {
-        if (ai8003.length()<14 || !StringUtils.isNumeric(ai8003.substring(0, 13)))
+        if (ai8003.length()!=14 || !StringUtils.isNumeric(ai8003.substring(0, 13)))
             throw new RuntimeException("GRAI (must be numeric) with serial must be 14 digits long");
 
         return new Grai170(filter, companyPrefixDigits, Long.parseLong(ai8003.substring(0, companyPrefixDigits)), Integer.parseInt(ai8003.substring(companyPrefixDigits, 13 - 1)), ai8003.substring(13));
@@ -133,7 +144,7 @@ public final class Grai170 extends Grai{
      * Table A-1 for the encoding
      */
     private String getUriSerialChar(char ch){
-        if (ch < 0x21 || ch > 0x7A)
+        if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
             throw new RuntimeException("Wrong char");
         switch (ch){
             case '"':
@@ -216,13 +227,17 @@ public final class Grai170 extends Grai{
         byte[] tmpba;
 
         i =176-8-3-3-cpb-atb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getAssetTypeBits(partition)
-        for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+        for(;(tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7)
             serialBuilder.append(new String(tmpba));
 
         String serial = serialBuilder.toString();
 
-        Grai170 grai170 = new Grai170(filter,getCompanyPrefixDigits(partition),companyPrefix,assetType,serial);
-        grai170.setEpc(epc);
-        return grai170;
+        try{
+            Grai170 grai170 = new Grai170(filter,getCompanyPrefixDigits(partition),companyPrefix,assetType,serial);
+            grai170.setEpc(epc);
+            return grai170;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

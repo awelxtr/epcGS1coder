@@ -35,8 +35,14 @@ public final class Grai96 extends Grai {
                    long serial){
         this.filter = GraiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (assetType >= 1l<<getAssetTypeBits(partition))
+            throw new RuntimeException("Asset Type too large, max value (exclusive):" + (1l<<getAssetTypeBits(partition)));
         this.assetType = assetType;
+        if (serial >= 1l<<serialSize)
+            throw new RuntimeException("Asset Type too large, max value (exclusive):" + (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -124,7 +130,7 @@ public final class Grai96 extends Grai {
     }
 
     public static Grai96 fromGs1Key(int filter,int companyPrefixDigits, String ai8003) {
-        if (ai8003.length()<14 || !StringUtils.isNumeric(ai8003))
+        if (ai8003.length()!=14 || !StringUtils.isNumeric(ai8003))
             throw new RuntimeException("GRAI with serial must be 14 digits long");
         return new Grai96(filter, companyPrefixDigits, Long.parseLong(ai8003.substring(0, companyPrefixDigits)), Integer.parseInt(ai8003.substring(companyPrefixDigits, 13 - 1)), Long.parseLong(ai8003.substring(13)));
     }
@@ -191,8 +197,12 @@ public final class Grai96 extends Grai {
             tmp+=1L<<i;
         long serial = tmp;
 
-        Grai96 grai96 = new Grai96(filter,getCompanyPrefixDigits(partition),companyPrefix,assetType,serial);
-        grai96.setEpc(epc);
-        return grai96;
+        try{
+            Grai96 grai96 = new Grai96(filter,getCompanyPrefixDigits(partition),companyPrefix,assetType,serial);
+            grai96.setEpc(epc);
+            return grai96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

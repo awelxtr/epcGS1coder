@@ -27,9 +27,13 @@ public final class Usdod96 {
                     String governmentManagedIdentifier,
                     long serial){
         this.filter = UsdodFilter.values()[filter];
+        if (governmentManagedIdentifier.length() != governmentManagedIdentifierSize)
+            throw new RuntimeException("CAGE string must be "+governmentManagedIdentifierSize + " characters long");
         this.governmentManagedIdentifier = governmentManagedIdentifier;
+        for (char ch : governmentManagedIdentifier.toCharArray())
+            getCageCodeByte(ch); //Will throw exception if there is a problem
         if (serial>= 1l<<serialSize)
-            throw new RuntimeException("Serial too big (max: "+serialSize+" bits)");
+            throw new RuntimeException("Serial too big (max, exclusive: "+serialSize+" bits)");
         this.serial = serial;
     }
 
@@ -170,10 +174,14 @@ public final class Usdod96 {
         for(tmp = 0, i = serialSize; (i = bs.previousSetBit(i-1)) > -1;)
             tmp+=1L<<i;
         long serial = tmp;
-
-        Usdod96 usdod96 = new Usdod96(filter, governmentManagedIdentifier, serial);
-        usdod96.setEpc(epc);
-        return usdod96;
+        
+        try{
+            Usdod96 usdod96 = new Usdod96(filter, governmentManagedIdentifier, serial);
+            usdod96.setEpc(epc);
+            return usdod96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     enum UsdodFilter {

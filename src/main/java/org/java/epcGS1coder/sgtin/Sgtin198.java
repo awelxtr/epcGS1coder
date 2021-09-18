@@ -1,11 +1,13 @@
 package org.java.epcGS1coder.sgtin;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The Serialised Global Trade Item Number EPC scheme is used to assign a unique
@@ -20,6 +22,8 @@ public final class Sgtin198 extends Sgtin {
     private final static int padding = 10;
     private final static byte serialMaxChars = 20;
     private final static String uriHeader = "urn:epc:tag:sgtin-198:";
+    // Table A-1 specifies the valid characters in serials, this set is to make the validators more maintenable
+    private final static HashSet<Character> invalidTableA1Chars = Arrays.asList(0x23,0x24,0x40,0x5B,0x5C,0x5D,0x5E,0x60).stream().map(Character.class::cast).collect(Collectors.toCollection(HashSet::new));
     
     private String epc;
     
@@ -37,10 +41,17 @@ public final class Sgtin198 extends Sgtin {
                      String serial){
         this.filter = SgtinFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (itemReference >= 1l<<getItemReferenceBits(partition))
+            throw new RuntimeException("Item Prefix too large, max value (exclusive):" + (1l<<getItemReferenceBits(partition)));
         this.itemReference = itemReference;
         if (serial.length() > serialMaxChars)
             throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+        for (char ch : serial.toCharArray())
+            if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
+                throw new RuntimeException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -135,7 +146,7 @@ public final class Sgtin198 extends Sgtin {
      * Table A-1 for the encoding
      */
     private String getUriSerialChar(char ch){
-        if (ch < 0x21 || ch > 0x7A)
+        if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
             throw new RuntimeException("Wrong char");
         switch (ch){
             case '"':
@@ -218,14 +229,17 @@ public final class Sgtin198 extends Sgtin {
         byte[] tmpba;
 
         i =208-58; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getItemReferenceBits(partition)
-        for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+        for(;(tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7)
             serialBuilder.append(new String(tmpba));
 
         String serial = serialBuilder.toString();
-
-        Sgtin198 sgtin198 = new Sgtin198(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
-        sgtin198.setEpc(epc);
-        return sgtin198;
+        try{
+            Sgtin198 sgtin198 = new Sgtin198(filter,getCompanyPrefixDigits(partition),companyPrefix,itemReference,serial);
+            sgtin198.setEpc(epc);
+            return sgtin198;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
 }

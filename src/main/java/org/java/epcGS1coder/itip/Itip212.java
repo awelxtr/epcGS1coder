@@ -2,7 +2,9 @@ package org.java.epcGS1coder.itip;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +21,8 @@ public final class Itip212 extends Itip{
     private final static byte serialMaxChars = 20;
     private final static int padding = 12;
     private static final String uriHeader = "urn:epc:tag:itip-212:";
+    // Table A-1 specifies the valid characters in serials, this set is to make the validators more maintenable
+    private final static HashSet<Character> invalidTableA1Chars = Arrays.asList(0x23,0x24,0x40,0x5B,0x5C,0x5D,0x5E,0x60).stream().map(Character.class::cast).collect(Collectors.toCollection(HashSet::new));
     
     private String epc = null;
     
@@ -42,10 +46,23 @@ public final class Itip212 extends Itip{
                     String serial){
         this.filter = ItipFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (indicatorPadDigitItemReference >= 1l<<getIndicatorPadDigitItemReferenceBits(partition))
+            throw new RuntimeException("Indicator/Pad Digit and Item Reference too large, max value (exclusive):" + (1l<<getIndicatorPadDigitItemReferenceBits(partition)));
         this.indicatorPadDigitItemReference = indicatorPadDigitItemReference;
+        if (piece < 0 || piece > 99)
+            throw new RuntimeException("Invalid piece, must be between 0 and 99");
         this.piece = piece;
+        if (total < 0 || total > 99)
+            throw new RuntimeException("Invalid total, must be between 0 and 99");
         this.total = total;
+        if (serial.length() > serialMaxChars)
+            throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+        for (char ch : serial.toCharArray())
+            if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
+                throw new RuntimeException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -232,16 +249,20 @@ public final class Itip212 extends Itip{
 
         String serial = serialBuilder.toString();
 
-        Itip212 itip212 = new Itip212(filter,getCompanyPrefixDigits(partition),companyPrefix,indicatorPadDigitItemReference,piece,total,serial);
-        itip212.setEpc(epc);
-        return itip212;
+        try{
+            Itip212 itip212 = new Itip212(filter,getCompanyPrefixDigits(partition),companyPrefix,indicatorPadDigitItemReference,piece,total,serial);
+            itip212.setEpc(epc);
+            return itip212;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     /**
      * Table A-1 for the encoding
      */
     private String getUriSerialChar(char ch){
-        if (ch < 0x21 || ch > 0x7A)
+        if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
             throw new RuntimeException("Wrong char");
         switch (ch){
             case '"':

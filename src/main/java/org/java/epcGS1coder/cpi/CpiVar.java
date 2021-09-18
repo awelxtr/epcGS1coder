@@ -36,6 +36,8 @@ public final class CpiVar extends Cpi{
                    long serial){
         this.filter = CpiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         int maxDigits = getComponentPartReferenceMaximumDigits(partition);
         if (componentPartReference.length() > maxDigits)
@@ -212,9 +214,13 @@ public final class CpiVar extends Cpi{
             tmp+=1L<<(i - offset);
         long serial = tmp;
 
-        CpiVar cpiVar = new CpiVar(filter,getCompanyPrefixDigits(partition),companyPrefix,companyPartReference,serial);
-        cpiVar.setEpc(epc);
-        return cpiVar;
+        try{
+            CpiVar cpiVar = new CpiVar(filter,getCompanyPrefixDigits(partition),companyPrefix,companyPartReference,serial);
+            cpiVar.setEpc(epc);
+            return cpiVar;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     /**

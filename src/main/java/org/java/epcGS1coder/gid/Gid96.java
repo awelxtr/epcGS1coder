@@ -26,8 +26,14 @@ public final class Gid96 {
     private Gid96(int generalManagerNumber,
                   int objectClass,
                   long serial){
+        if (generalManagerNumber > 1l<<generalManagerNumberSize)
+            throw new RuntimeException("General Manager Number too large, max number (exclusive): "+ (1l<<generalManagerNumberSize));
         this.generalManagerNumber = generalManagerNumber;
+        if (objectClass > 1l<<objectClassSize)
+            throw new RuntimeException("Object class too large, max number (exclusive): "+ (1l<<objectClassSize));
         this.objectClass = objectClass;
+        if (serial > 1l<<serialSize)
+            throw new RuntimeException("Serial too large, max number (exclusive): "+ (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -149,8 +155,12 @@ public final class Gid96 {
             tmp+=1L<<i;
         long serial = tmp;
 
-        Gid96 gid96 = fromFields(generalManagerNumber,objectClass,serial);
-        gid96.setEpc(epc);
-        return gid96;
+        try{
+            Gid96 gid96 = fromFields(generalManagerNumber,objectClass,serial);
+            gid96.setEpc(epc);
+            return gid96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

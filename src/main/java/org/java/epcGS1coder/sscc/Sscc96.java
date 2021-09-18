@@ -33,7 +33,11 @@ public final class Sscc96 {
                    long serialReference){
         this.filter = SsccFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (serialReference >= 1l<<getSerialReferenceBits(partition))
+            throw new RuntimeException("Serial reference too large, max value (exclusive):" + (1l<<getSerialReferenceBits(partition)));
         this.serialReference = serialReference;
     }
 
@@ -45,7 +49,7 @@ public final class Sscc96 {
     }
 
     public static Sscc96 fromGs1Key(int filter,int companyPrefixDigits,String ai00){
-        if (ai00.length()<18 || !StringUtils.isNumeric(ai00))
+        if (ai00.length()!=18 || !StringUtils.isNumeric(ai00))
             throw new RuntimeException("AI 00 must be 18 digits long");
 
         return new Sscc96(filter, companyPrefixDigits, Long.parseLong(ai00.substring(1,companyPrefixDigits+1)), Long.parseLong(ai00.charAt(0)+ai00.substring(companyPrefixDigits+1,17)));
@@ -93,10 +97,13 @@ public final class Sscc96 {
             tmp += 1l << (i - (96 - 8 - 3 - 3 - cpb - irb));
         long serialReference = tmp;
 
-        Sscc96 sscc96 = new Sscc96(filter,partition,companyPrefix,serialReference);
-        sscc96.setEpc(epc);
-
-        return sscc96;
+        try{
+            Sscc96 sscc96 = new Sscc96(filter,partition,companyPrefix,serialReference);
+            sscc96.setEpc(epc);
+            return sscc96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     public static Sscc96 fromUri(String uri){

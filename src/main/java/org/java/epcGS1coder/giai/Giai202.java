@@ -2,7 +2,9 @@ package org.java.epcGS1coder.giai;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -15,8 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 public final class Giai202 extends Giai{
     private final static byte epcHeader = 0b00111000;
     private final static int padding = 6;
-    private final static byte serialMaxChars = 24;
+    private final static byte individualAssetReferenceMaxChars = 24;
     private final static String uriHeader = "urn:epc:tag:giai-202:";
+    // Table A-1 specifies the valid characters in serials, this set is to make the validators more maintenable
+    private final static HashSet<Character> invalidTableA1Chars = Arrays.asList(0x23,0x24,0x40,0x5B,0x5C,0x5D,0x5E,0x60).stream().map(Character.class::cast).collect(Collectors.toCollection(HashSet::new));
     
     private String epc;
     
@@ -32,9 +36,14 @@ public final class Giai202 extends Giai{
                     String individualAssetReference){
         this.filter = GiaiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
-        if (individualAssetReference.length() > serialMaxChars)
-            throw new RuntimeException("Individual Asset Reference must at most " + serialMaxChars + " alphanumeric characters long");
+        if (individualAssetReference.length() > individualAssetReferenceMaxChars)
+            throw new RuntimeException("Individual Asset Reference must at most " + individualAssetReferenceMaxChars + " alphanumeric characters long");
+        for (char ch : individualAssetReference.toCharArray())
+            if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
+                throw new RuntimeException("Invalid Individual Asset Reference character");
         this.individualAssetReference = individualAssetReference;
     }
 
@@ -122,7 +131,7 @@ public final class Giai202 extends Giai{
      * Table A-1 for the encoding
      */
     private String getUriIndividualAssetReferenceChar(char ch){
-        if (ch < 0x21 || ch > 0x7A)
+        if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
             throw new RuntimeException("Wrong char");
         switch (ch){
             case '"':
@@ -198,14 +207,18 @@ public final class Giai202 extends Giai{
         byte[] tmpba;
 
         i =208-8-3-3-cpb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition)
-        for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+        for(; (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7)
             individualAssetReferenceBuilder.append(new String(tmpba));
 
         String individualAssetReference = individualAssetReferenceBuilder.toString();
-
-        Giai202 giai202 = new Giai202(filter,getCompanyPrefixDigits(partition),companyPrefix,individualAssetReference);
-        giai202.setEpc(epc);
-        return giai202;
+        
+        try{
+            Giai202 giai202 = new Giai202(filter,getCompanyPrefixDigits(partition),companyPrefix,individualAssetReference);
+            giai202.setEpc(epc);
+            return giai202;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     /**

@@ -1,11 +1,13 @@
 package org.java.epcGS1coder.sgln;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The SGLN EPC scheme is used to assign a unique identity to a physical location, such as a specific
@@ -17,8 +19,10 @@ public final class Sgln195 extends Sgln {
     private final static byte epcHeader = 0b00111001;
     private final static int extensionSize = 140;
     private final static int padding = 13;
-    private final static byte serialMaxChars = 20;
+    private final static byte extensionMaxChars = 20;
     private final static String uriHeader = "urn:epc:tag:sgln-195:";
+    // Table A-1 specifies the valid characters in serials, this set is to make the validators more maintenable
+    private final static HashSet<Character> invalidTableA1Chars = Arrays.asList(0x23,0x24,0x40,0x5B,0x5C,0x5D,0x5E,0x60).stream().map(Character.class::cast).collect(Collectors.toCollection(HashSet::new));
     
     private String epc;
     
@@ -36,10 +40,17 @@ public final class Sgln195 extends Sgln {
                     String extension){
         this.filter = SglnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (locationReference >= 1l<<getLocationReferenceBits(partition))
+            throw new RuntimeException("Location Reference too large, max value (exclusive):" + (1l<<getLocationReferenceBits(partition)));
         this.locationReference = locationReference;
-        if (extension.length() > serialMaxChars)
-            throw new RuntimeException("Extension must at most " + serialMaxChars + " alphanumeric characters long");
+        if (extension.length() > extensionMaxChars)
+            throw new RuntimeException("Extension must at most " + extensionMaxChars + " alphanumeric characters long");
+        for (char ch : extension.toCharArray())
+            if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
+                throw new RuntimeException("Invalid extension character");
         this.extension = extension;
     }
 
@@ -52,7 +63,7 @@ public final class Sgln195 extends Sgln {
     }
 
     public static Sgln195 fromGs1Key(int filter,int companyPrefixDigits, String ai414, String ai254) {
-        if (ai414.length()<13 || !StringUtils.isNumeric(ai414))
+        if (ai414.length()!=13 || !StringUtils.isNumeric(ai414))
             throw new RuntimeException("GLN must be 13 digits long");
 
         return new Sgln195(filter, companyPrefixDigits, Long.parseLong(ai414.substring(0, companyPrefixDigits)), Integer.parseInt(ai414.substring(companyPrefixDigits, 13-1)), ai254);
@@ -135,7 +146,7 @@ public final class Sgln195 extends Sgln {
      * Table A-1 for the encoding
      */
     private String getUriExtensionChar(char ch){
-        if (ch < 0x21 || ch > 0x7A)
+        if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
             throw new RuntimeException("Wrong char");
         switch (ch){
             case '"':
@@ -170,9 +181,13 @@ public final class Sgln195 extends Sgln {
             sb.append(extensionSplit[i].substring(2));
         }
 
-        Sgln195 sgln195 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,sb.toString());
-        sgln195.setUri(uri);
-        return sgln195;
+        try{
+            Sgln195 sgln195 = fromFields(filter,getCompanyPrefixDigits(partition),companyPrefix,locationReference,sb.toString());
+            sgln195.setUri(uri);
+            return sgln195;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 
     public static Sgln195 fromEpc(String epc) {
@@ -218,7 +233,7 @@ public final class Sgln195 extends Sgln {
         byte[] tmpba;
 
         i =208-8-3-3-cpb-lrb; //buffer size - epcheader.size - filter.size - partition.size - getCompanyPrefixBits(partition) - getLocationReferenceBits(partition)
-        for(int j = 0;j < serialMaxChars && (tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7,j++)
+        for(;(tmpba = bs.get(i-7,i).toByteArray()).length!=0;i-=7)
             extensionBuilder.append(new String(tmpba));
 
         String extension = extensionBuilder.toString();

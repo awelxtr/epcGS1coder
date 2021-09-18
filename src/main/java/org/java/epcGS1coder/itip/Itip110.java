@@ -40,10 +40,20 @@ public final class Itip110 extends Itip {
                     long serial){
         this.filter = ItipFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (indicatorPadDigitItemReference >= 1l<<getIndicatorPadDigitItemReferenceBits(partition))
+            throw new RuntimeException("Indicator/Pad Digit and Item Reference too large, max value (exclusive):" + (1l<<getIndicatorPadDigitItemReferenceBits(partition)));
         this.indicatorPadDigitItemReference = indicatorPadDigitItemReference;
+        if (piece < 0 || piece > 99)
+            throw new RuntimeException("Invalid piece, must be between 0 and 99");
         this.piece = piece;
+        if (total < 0 || total > 99)
+            throw new RuntimeException("Invalid total, must be between 0 and 99");
         this.total = total;
+        if (serial > 1l<<serialSize)
+            throw new RuntimeException("Serial too large, max value (exclusive):"+(1l<<serialSize));
         this.serial = serial;
     }
 
@@ -223,8 +233,12 @@ public final class Itip110 extends Itip {
             tmp+=1L<<i;
         long serial = tmp>>padding;
 
-        Itip110 itip110 = new Itip110(filter,getCompanyPrefixDigits(partition),companyPrefix,indicatorPadDigitItemReference,piece,total,serial);
-        itip110.setEpc(epc);
-        return itip110;
+        try{
+            Itip110 itip110 = new Itip110(filter,getCompanyPrefixDigits(partition),companyPrefix,indicatorPadDigitItemReference,piece,total,serial);
+            itip110.setEpc(epc);
+            return itip110;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }

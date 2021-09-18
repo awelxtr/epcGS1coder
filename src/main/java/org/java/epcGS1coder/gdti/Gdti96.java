@@ -35,8 +35,14 @@ public final class Gdti96 extends Gdti{
                    long serial){
         this.filter = GdtiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
+        if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
+            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
+        if (documentType >= 1l<<getDocumentTypeBits(partition))
+            throw new RuntimeException("Document Type too large, max value (exclusive):" + (1l<<getDocumentTypeBits(partition)));
         this.documentType = documentType;
+        if (serial >= 1l<<serialSize)
+            throw new RuntimeException("Serial too large, max value (exclusive):" + (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -190,8 +196,12 @@ public final class Gdti96 extends Gdti{
             tmp+=1L<<i;
         long serial = tmp;
 
-        Gdti96 gdti96 = new Gdti96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
-        gdti96.setEpc(epc);
-        return gdti96;
+        try{
+            Gdti96 gdti96 = new Gdti96(filter,getCompanyPrefixDigits(partition),companyPrefix,documentType,serial);
+            gdti96.setEpc(epc);
+            return gdti96;
+        } catch (RuntimeException e){
+            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+        }
     }
 }
