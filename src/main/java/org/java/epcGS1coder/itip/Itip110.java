@@ -41,19 +41,19 @@ public final class Itip110 extends Itip {
         this.filter = ItipFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (indicatorPadDigitItemReference >= 1l<<getIndicatorPadDigitItemReferenceBits(partition))
-            throw new RuntimeException("Indicator/Pad Digit and Item Reference too large, max value (exclusive):" + (1l<<getIndicatorPadDigitItemReferenceBits(partition)));
+            throw new IllegalArgumentException("Indicator/Pad Digit and Item Reference too large, max value (exclusive):" + (1l<<getIndicatorPadDigitItemReferenceBits(partition)));
         this.indicatorPadDigitItemReference = indicatorPadDigitItemReference;
         if (piece < 0 || piece > 99)
-            throw new RuntimeException("Invalid piece, must be between 0 and 99");
+            throw new IllegalArgumentException("Invalid piece, must be between 0 and 99");
         this.piece = piece;
         if (total < 0 || total > 99)
-            throw new RuntimeException("Invalid total, must be between 0 and 99");
+            throw new IllegalArgumentException("Invalid total, must be between 0 and 99");
         this.total = total;
         if (serial > 1l<<serialSize)
-            throw new RuntimeException("Serial too large, max value (exclusive):"+(1l<<serialSize));
+            throw new IllegalArgumentException("Serial too large, max value (exclusive):"+(1l<<serialSize));
         this.serial = serial;
     }
 
@@ -157,14 +157,14 @@ public final class Itip110 extends Itip {
 
     public static Itip110 fromGs1Key(int filter,int companyPrefixDigits, String ai8006, long ai21) {
         if (ai8006.length()!= 18 || !StringUtils.isNumeric(ai8006))
-            throw new RuntimeException("ITIP must be 18 digits long");
+            throw new IllegalArgumentException("ITIP must be 18 digits long");
         return new Itip110(filter, companyPrefixDigits, Long.parseLong(ai8006.substring(1, companyPrefixDigits + 1)), Integer.parseInt(ai8006.substring(companyPrefixDigits + 1, 14 - 1)),Byte.parseByte(ai8006.substring(14+1, 14+1+2-1)),Byte.parseByte(ai8006.substring(14+1+2, 14+1+2+2-1)), ai21);
     }
 
 
     public static Itip110 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -200,7 +200,7 @@ public final class Itip110 extends Itip {
         for(tmp = 0, i = 112; (i = bs.previousSetBit(i-1)) > 112 - 8 - 1;)
             tmp+=1L<<(i-(112-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 112 - 8; (i = bs.previousSetBit(i-1)) > 112 - 8 - 3 - 1;)
             tmp+=1L<<(i-(112-8-3));
@@ -238,7 +238,7 @@ public final class Itip110 extends Itip {
             itip110.setEpc(epc);
             return itip110;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }

@@ -39,13 +39,13 @@ public final class Cpi96 extends Cpi{
         this.filter = CpiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (componentPartReference >= 1l<<getComponentPartReferenceBits(partition))
-            throw new RuntimeException("Component Part Reference too large, max value (exclusive):" + (1l<<getComponentPartReferenceBits(partition)));
+            throw new IllegalArgumentException("Component Part Reference too large, max value (exclusive):" + (1l<<getComponentPartReferenceBits(partition)));
         this.componentPartReference = componentPartReference;
         if (serial >= 1l<<serialSize)
-            throw new RuntimeException("Serial too large, max value (exclusive):" + (1l<<serialSize));
+            throw new IllegalArgumentException("Serial too large, max value (exclusive):" + (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -121,14 +121,14 @@ public final class Cpi96 extends Cpi{
 
     public static Cpi96 fromGs1Key(int filter,int companyPrefixDigits, String ai8010, long ai8011) {
         if (ai8010.length()<7 || ai8010.length()>30 || !StringUtils.isNumeric(ai8010))
-            throw new RuntimeException("CPI must be between 7 and 30 digits long");
+            throw new IllegalArgumentException("CPI must be between 7 and 30 digits long");
         return new Cpi96(filter, companyPrefixDigits, Long.parseLong(ai8010.substring(0, companyPrefixDigits)), Integer.parseInt(ai8010.substring(companyPrefixDigits)), ai8011);
     }
 
 
     public static Cpi96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -162,7 +162,7 @@ public final class Cpi96 extends Cpi{
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
             tmp+=1L<<(i-(96-8-3));
@@ -192,7 +192,7 @@ public final class Cpi96 extends Cpi{
             cpi96.setEpc(epc);
             return cpi96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 
@@ -230,7 +230,7 @@ public final class Cpi96 extends Cpi{
             case 6:
                 return 20;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 
@@ -256,7 +256,7 @@ public final class Cpi96 extends Cpi{
             case 6:
                 return 31;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 

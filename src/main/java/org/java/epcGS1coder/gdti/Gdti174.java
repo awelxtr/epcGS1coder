@@ -40,16 +40,16 @@ public final class Gdti174 extends Gdti {
         this.filter = GdtiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (documentType >= 1l<<getDocumentTypeBits(partition))
-            throw new RuntimeException("Document Type too large, max value (exclusive):" + (1l<<getDocumentTypeBits(partition)));
+            throw new IllegalArgumentException("Document Type too large, max value (exclusive):" + (1l<<getDocumentTypeBits(partition)));
         this.documentType = documentType;
         if (serial.length() > serialMaxChars)
-            throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+            throw new IllegalArgumentException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
         for (char ch : serial.toCharArray())
             if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-                throw new RuntimeException("Invalid serial character");
+                throw new IllegalArgumentException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -63,7 +63,7 @@ public final class Gdti174 extends Gdti {
 
     public static Gdti174 fromGs1Key(int filter,int companyPrefixDigits, String ai253) {
         if (ai253.length()<14 || !StringUtils.isNumeric(ai253.substring(0, 13)))
-            throw new RuntimeException("GRAI (must be numeric) with serial must be 14 digits long");
+            throw new IllegalArgumentException("GRAI (must be numeric) with serial must be 14 digits long");
 
         return new Gdti174(filter, companyPrefixDigits, Long.parseLong(ai253.substring(0, companyPrefixDigits)), Integer.parseInt(ai253.substring(companyPrefixDigits, 13 - 1)), ai253.substring(13));
     }
@@ -146,7 +146,7 @@ public final class Gdti174 extends Gdti {
      */
     private String getUriSerialChar(char ch){
         if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-            throw new RuntimeException("Wrong char");
+            throw new IllegalArgumentException("Wrong char");
         switch (ch){
             case '"':
             case '%':
@@ -163,7 +163,7 @@ public final class Gdti174 extends Gdti {
 
     public static Gdti174 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -204,7 +204,7 @@ public final class Gdti174 extends Gdti {
         for(tmp = 0, i = 176; (i = bs.previousSetBit(i-1)) > 176 - 8 - 1;)
             tmp+=1L<<(i-(176-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 176 - 8; (i = bs.previousSetBit(i-1)) > 176 - 8 - 3 - 1;)
             tmp+=1L<<(i-(176-8-3));
@@ -238,7 +238,7 @@ public final class Gdti174 extends Gdti {
             gdti174.setEpc(epc);
             return gdti174;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }

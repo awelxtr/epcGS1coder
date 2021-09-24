@@ -43,23 +43,23 @@ public final class AdiVar {
             String serial){
         this.filter = AdiFilter.values()[filter];
         if (cage.length() != cageSize)
-            throw new RuntimeException("CAGE code must be 5 characters long");
+            throw new IllegalArgumentException("CAGE code must be 5 characters long");
         for (char ch : cage.toCharArray())
             getCageCodeByte(ch); // Will throw an exception if the CAGE character is invalid.
         this.cage = cage;
         if (partNumber.length() > 32)
-            throw new RuntimeException("Part number must be between 0 and 32 characters long");
+            throw new IllegalArgumentException("Part number must be between 0 and 32 characters long");
         for (char ch : partNumber.toCharArray())
             if (!((ch>='0' && ch <='9') || (ch>='A' && ch<='Z') || ch == '-' || ch == '/')) //Table G-1 (part number can't contain '#'')
-                throw new RuntimeException("Port number contains invalid character: " + ch);
+                throw new IllegalArgumentException("Port number contains invalid character: " + ch);
         this.partNumber = partNumber;
         if (serial.length() == 0 || serial.length() > 30)
-            throw new RuntimeException("Serial number must be between 1 and 30 characters long");
+            throw new IllegalArgumentException("Serial number must be between 1 and 30 characters long");
         for (char ch : serial.toCharArray())
             if (!((ch>='0' && ch <='9') || (ch>='A' && ch<='Z') || ch == '#' || ch == '-' || ch == '/')) //Table G-1
-                throw new RuntimeException("Serial contains invalid character: " + ch);
+                throw new IllegalArgumentException("Serial contains invalid character: " + ch);
         if (serial.indexOf('#') > 0)
-            throw new RuntimeException("'#' can only appear at the beggining of the serial");
+            throw new IllegalArgumentException("'#' can only appear at the beggining of the serial");
         this.serial = serial;
     }
 
@@ -68,7 +68,7 @@ public final class AdiVar {
             return (byte) (cageChar & 0b111111);
         if (cageChar >= '0' && cageChar <= '9')
             return (byte) cageChar;
-        throw new RuntimeException("Invalid CAGE code character"); // [a-zIO] & the rest of possible chars
+        throw new IllegalArgumentException("Invalid CAGE code character"); // [a-zIO] & the rest of possible chars
     }
 
     private static char getCageCodeChar(byte cageByte){
@@ -158,7 +158,7 @@ public final class AdiVar {
 
     public static AdiVar fromUri(String uri){
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -197,7 +197,7 @@ public final class AdiVar {
         for(tmp = 0, i = epcBitSize; (i = bs.previousSetBit(i-1)) > epcBitSize - 8 - 1;)
             tmp+=1L<<(i-(epcBitSize-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = epcBitSize - 8; (i = bs.previousSetBit(i-1)) > epcBitSize - 8 - 6 - 1;)
             tmp+=1L<<(i-(epcBitSize-8-6));
@@ -208,7 +208,7 @@ public final class AdiVar {
         StringBuilder cageBuilder = new StringBuilder("");
         i=epcBitSize-8-6;
         if (bs.get(i-6,i).toByteArray()[0] != 32) // the encoded CAGE starts with a ' ' 
-            throw new RuntimeException("CAGE code incorrectly encoded");
+            throw new IllegalArgumentException("CAGE code incorrectly encoded");
         i-=6;  
         for(int j = 0;j < cageSize && (tmpba = bs.get(i-6,i).toByteArray()).length!=0;i-=6,j++)
             cageBuilder.append(getCageCodeChar(tmpba[0]));
@@ -235,7 +235,7 @@ public final class AdiVar {
             adiVar.setEpc(epc);
             return adiVar;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 
@@ -251,7 +251,7 @@ public final class AdiVar {
      */
     private String getUriSerialChar(char ch){
         if (!((ch>='0' && ch <='9') || (ch>='A' && ch<='Z') || ch == '-' || ch == '/'))
-            throw new RuntimeException("Wrong char");
+            throw new IllegalArgumentException("Wrong char");
         if (ch == '#')
             return "%23";
         else 

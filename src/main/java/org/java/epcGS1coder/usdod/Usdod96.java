@@ -28,12 +28,12 @@ public final class Usdod96 {
                     long serial){
         this.filter = UsdodFilter.values()[filter];
         if (governmentManagedIdentifier.length() != governmentManagedIdentifierSize)
-            throw new RuntimeException("CAGE string must be "+governmentManagedIdentifierSize + " characters long");
+            throw new IllegalArgumentException("CAGE string must be "+governmentManagedIdentifierSize + " characters long");
         this.governmentManagedIdentifier = governmentManagedIdentifier;
         for (char ch : governmentManagedIdentifier.toCharArray())
             getCageCodeByte(ch); //Will throw exception if there is a problem
         if (serial>= 1l<<serialSize)
-            throw new RuntimeException("Serial too big (max, exclusive: "+serialSize+" bits)");
+            throw new IllegalArgumentException("Serial too big (max, exclusive: "+serialSize+" bits)");
         this.serial = serial;
     }
 
@@ -42,7 +42,7 @@ public final class Usdod96 {
             return (byte) cageChar;
         if (cageChar >= '0' && cageChar <= '9')
             return (byte) (cageChar | 0b00110000);
-        throw new RuntimeException("Invalid CAGE code character"); // [a-zIO] & the rest of possible chars
+        throw new IllegalArgumentException("Invalid CAGE code character"); // [a-zIO] & the rest of possible chars
     }
 
     private static char getCageCodeChar(byte cageByte){
@@ -123,7 +123,7 @@ public final class Usdod96 {
 
     public static Usdod96 fromUri(String uri){
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -153,7 +153,7 @@ public final class Usdod96 {
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 4 - 1;)
             tmp+=1L<<(i-(96-8-4));
@@ -164,7 +164,7 @@ public final class Usdod96 {
 
         i=96-8-4;
         if (bs.get(i-8,i).toByteArray()[0] != 32) // the encoded CAGE starts with a ' ' 
-            throw new RuntimeException("CAGE code incorrectly encoded");
+            throw new IllegalArgumentException("CAGE code incorrectly encoded");
         i-=8;    
         for(int j = 0;j < governmentManagedIdentifierSize && (tmpba = bs.get(i-8,i).toByteArray()).length!=0;i-=8,j++)
             cageBuilder.append(getCageCodeChar(tmpba[0]));
@@ -180,7 +180,7 @@ public final class Usdod96 {
             usdod96.setEpc(epc);
             return usdod96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 

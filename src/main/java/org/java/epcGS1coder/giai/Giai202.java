@@ -37,13 +37,13 @@ public final class Giai202 extends Giai{
         this.filter = GiaiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (individualAssetReference.length() > individualAssetReferenceMaxChars)
-            throw new RuntimeException("Individual Asset Reference must at most " + individualAssetReferenceMaxChars + " alphanumeric characters long");
+            throw new IllegalArgumentException("Individual Asset Reference must at most " + individualAssetReferenceMaxChars + " alphanumeric characters long");
         for (char ch : individualAssetReference.toCharArray())
             if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-                throw new RuntimeException("Invalid Individual Asset Reference character");
+                throw new IllegalArgumentException("Invalid Individual Asset Reference character");
         this.individualAssetReference = individualAssetReference;
     }
 
@@ -56,7 +56,7 @@ public final class Giai202 extends Giai{
 
     public static Giai202 fromGs1Key(int filter,int companyPrefixDigits, String ai8004) {
         if (ai8004.length()<7 || !StringUtils.isNumeric(ai8004.substring(0, companyPrefixDigits)))
-            throw new RuntimeException("GIAI (must be numeric) with individual asset reference must be at least 7 digits long");
+            throw new IllegalArgumentException("GIAI (must be numeric) with individual asset reference must be at least 7 digits long");
 
         return new Giai202(filter, companyPrefixDigits, Long.parseLong(ai8004.substring(0, companyPrefixDigits)), ai8004.substring(companyPrefixDigits));
     }
@@ -132,7 +132,7 @@ public final class Giai202 extends Giai{
      */
     private String getUriIndividualAssetReferenceChar(char ch){
         if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-            throw new RuntimeException("Wrong char");
+            throw new IllegalArgumentException("Wrong char");
         switch (ch){
             case '"':
             case '%':
@@ -149,7 +149,7 @@ public final class Giai202 extends Giai{
 
     public static Giai202 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -188,7 +188,7 @@ public final class Giai202 extends Giai{
         for(tmp = 0, i = 208; (i = bs.previousSetBit(i-1)) > 208 - 8 - 1;)
             tmp+=1L<<(i-(208-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 208 - 8; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 1;)
             tmp+=1L<<(i-(208-8-3));
@@ -217,7 +217,7 @@ public final class Giai202 extends Giai{
             giai202.setEpc(epc);
             return giai202;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 
@@ -243,7 +243,7 @@ public final class Giai202 extends Giai{
             case 6:
                 return 20;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 
@@ -269,7 +269,7 @@ public final class Giai202 extends Giai{
             case 6:
                 return 168;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 

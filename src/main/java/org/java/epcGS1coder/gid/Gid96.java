@@ -27,13 +27,13 @@ public final class Gid96 {
                   int objectClass,
                   long serial){
         if (generalManagerNumber > 1l<<generalManagerNumberSize)
-            throw new RuntimeException("General Manager Number too large, max number (exclusive): "+ (1l<<generalManagerNumberSize));
+            throw new IllegalArgumentException("General Manager Number too large, max number (exclusive): "+ (1l<<generalManagerNumberSize));
         this.generalManagerNumber = generalManagerNumber;
         if (objectClass > 1l<<objectClassSize)
-            throw new RuntimeException("Object class too large, max number (exclusive): "+ (1l<<objectClassSize));
+            throw new IllegalArgumentException("Object class too large, max number (exclusive): "+ (1l<<objectClassSize));
         this.objectClass = objectClass;
         if (serial > 1l<<serialSize)
-            throw new RuntimeException("Serial too large, max number (exclusive): "+ (1l<<serialSize));
+            throw new IllegalArgumentException("Serial too large, max number (exclusive): "+ (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -107,7 +107,7 @@ public final class Gid96 {
 
     public static Gid96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int generalManagerNumber = Integer.parseInt(uriParts[0]);
@@ -139,7 +139,7 @@ public final class Gid96 {
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - generalManagerNumberSize - 1;)
             tmp+=1L<<(i-(96-8-generalManagerNumberSize));
@@ -160,7 +160,7 @@ public final class Gid96 {
             gid96.setEpc(epc);
             return gid96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }

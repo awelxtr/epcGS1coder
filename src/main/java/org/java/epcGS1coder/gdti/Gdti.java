@@ -23,7 +23,7 @@ class Gdti {
             case 6:
                 return 20;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 
@@ -49,7 +49,7 @@ class Gdti {
             case 6:
                 return 21;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 

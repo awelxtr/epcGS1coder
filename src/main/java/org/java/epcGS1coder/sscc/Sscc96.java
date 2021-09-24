@@ -34,10 +34,10 @@ public final class Sscc96 {
         this.filter = SsccFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (serialReference >= 1l<<getSerialReferenceBits(partition))
-            throw new RuntimeException("Serial reference too large, max value (exclusive):" + (1l<<getSerialReferenceBits(partition)));
+            throw new IllegalArgumentException("Serial reference too large, max value (exclusive):" + (1l<<getSerialReferenceBits(partition)));
         this.serialReference = serialReference;
     }
 
@@ -50,14 +50,14 @@ public final class Sscc96 {
 
     public static Sscc96 fromGs1Key(int filter,int companyPrefixDigits,String ai00){
         if (ai00.length()!=18 || !StringUtils.isNumeric(ai00))
-            throw new RuntimeException("AI 00 must be 18 digits long");
+            throw new IllegalArgumentException("AI 00 must be 18 digits long");
 
         return new Sscc96(filter, companyPrefixDigits, Long.parseLong(ai00.substring(1,companyPrefixDigits+1)), Long.parseLong(ai00.charAt(0)+ai00.substring(companyPrefixDigits+1,17)));
     }
 
     public static Sscc96 fromEpc(String epc){
         if (epc.length()<24)
-            throw new RuntimeException("Invalid EPC: shorter than 96 bits");
+            throw new IllegalArgumentException("Invalid EPC: shorter than 96 bits");
 
         ArrayList<String> a = new ArrayList<String>();
         for (int i = 0; i<epc.length(); i+=2) {
@@ -77,7 +77,7 @@ public final class Sscc96 {
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp += 1l << (i - (96 - 8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
             tmp += 1l << (i - (96 - 8 - 3));
@@ -102,17 +102,17 @@ public final class Sscc96 {
             sscc96.setEpc(epc);
             return sscc96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 
     public static Sscc96 fromUri(String uri){
         if (!uri.startsWith(tagUriHeader))
-            throw new RuntimeException("Wrong URI");
+            throw new IllegalArgumentException("Wrong URI");
         String[] uriParts = uri.split(":");
         uriParts = uriParts[uriParts.length-1].split("\\.");
         if ((uriParts[1].length() + uriParts[2].length())<17)
-            throw new RuntimeException("Company prefix and serial reference must have 17 digits in total");
+            throw new IllegalArgumentException("Company prefix and serial reference must have 17 digits in total");
         int filter = Integer.parseInt(uriParts[0]);
         byte partition = (byte) getPartition(uriParts[1].length());
         long companyPrefix = Long.parseLong(uriParts[1]);
@@ -207,7 +207,7 @@ public final class Sscc96 {
             case 6:
                 return 20;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 
@@ -233,7 +233,7 @@ public final class Sscc96 {
             case 6:
                 return 38;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 

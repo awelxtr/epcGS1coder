@@ -33,10 +33,10 @@ public final class Giai96 extends Giai {
         this.filter = GiaiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (individualAssetReference >= 1l<<getIndividualAssetReferenceBits(partition))
-            throw new RuntimeException("Individual Asset Reference too large, max value (exclusive):" + (1l<<getIndividualAssetReferenceBits(partition)));
+            throw new IllegalArgumentException("Individual Asset Reference too large, max value (exclusive):" + (1l<<getIndividualAssetReferenceBits(partition)));
         this.individualAssetReference = individualAssetReference;
     }
 
@@ -104,14 +104,14 @@ public final class Giai96 extends Giai {
 
     public static Giai96 fromGs1Key(int filter,int companyPrefixDigits, String ai8004) {
         if (ai8004.length()<7 || !StringUtils.isNumeric(ai8004))
-            throw new RuntimeException("GRAI with Individual Asset Reference must be at least 7 digits long");
+            throw new IllegalArgumentException("GRAI with Individual Asset Reference must be at least 7 digits long");
         return new Giai96(filter, companyPrefixDigits, Long.parseLong(ai8004.substring(0, companyPrefixDigits)), Integer.parseInt(ai8004.substring(companyPrefixDigits)));
     }
 
 
     public static Giai96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -156,7 +156,7 @@ public final class Giai96 extends Giai {
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
             tmp+=1L<<(i-(96-8-3));
@@ -181,7 +181,7 @@ public final class Giai96 extends Giai {
             grai96.setEpc(epc);
             return grai96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 
@@ -207,7 +207,7 @@ public final class Giai96 extends Giai {
             case 6:
                 return 20;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 
@@ -233,7 +233,7 @@ public final class Giai96 extends Giai {
             case 6:
                 return 62;
             default:
-                throw new RuntimeException("Invalid Partition: " + partition + " (0-6)");
+                throw new IllegalArgumentException("Invalid Partition: " + partition + " (0-6)");
         }
     }
 

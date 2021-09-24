@@ -23,10 +23,10 @@ public final class Gsrnp96 extends Gsrn{
         this.filter = GsrnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (serviceReference >= 1l<<getServiceReferenceBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getServiceReferenceBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getServiceReferenceBits(partition)));
         this.serviceReference = serviceReference;
     }
 
@@ -116,14 +116,14 @@ public final class Gsrnp96 extends Gsrn{
 
     public static Gsrnp96 fromGs1Key(int filter,int companyPrefixDigits, String ai8017) {
         if (ai8017.length()!=18 || !StringUtils.isNumeric(ai8017))
-            throw new RuntimeException("GSRN-Provider must be 18 digits");
+            throw new IllegalArgumentException("GSRN-Provider must be 18 digits");
         return new Gsrnp96(filter, companyPrefixDigits, Long.parseLong(ai8017.substring(0, companyPrefixDigits)), Long.parseLong(ai8017.substring(companyPrefixDigits,ai8017.length()-1)));
     }
 
 
     public static Gsrnp96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -156,7 +156,7 @@ public final class Gsrnp96 extends Gsrn{
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
             tmp+=1L<<(i-(96-8-3));
@@ -181,7 +181,7 @@ public final class Gsrnp96 extends Gsrn{
             gsrnp96.setEpc(epc);
             return gsrnp96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }

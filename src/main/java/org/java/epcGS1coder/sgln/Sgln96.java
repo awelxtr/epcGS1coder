@@ -34,13 +34,13 @@ public final class Sgln96 extends Sgln {
         this.filter = SglnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (locationReference >= 1l<<getLocationReferenceBits(partition))
-            throw new RuntimeException("Location Reference too large, max value (exclusive):" + (1l<<getLocationReferenceBits(partition)));
+            throw new IllegalArgumentException("Location Reference too large, max value (exclusive):" + (1l<<getLocationReferenceBits(partition)));
         this.locationReference = locationReference;
         if (extension >= 1l<<extensionSize)
-            throw new RuntimeException("Extension too large, max value (exclusive):" + (1l<<extensionSize));
+            throw new IllegalArgumentException("Extension too large, max value (exclusive):" + (1l<<extensionSize));
         this.extension = extension;
     }
 
@@ -112,13 +112,13 @@ public final class Sgln96 extends Sgln {
 
     public static Sgln96 fromGs1Key(int filter,int companyPrefixDigits, String ai414, long ai254) {
         if (ai414.length()!=13 || !StringUtils.isNumeric(ai414))
-            throw new RuntimeException("GLN must be 13 digits long");
+            throw new IllegalArgumentException("GLN must be 13 digits long");
         return new Sgln96(filter, companyPrefixDigits, Long.parseLong(ai414.substring(0, companyPrefixDigits)), Integer.parseInt(ai414.substring(companyPrefixDigits, 13-1)), ai254);
     }
 
     public static Sgln96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -152,7 +152,7 @@ public final class Sgln96 extends Sgln {
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
             tmp+=1L<<(i-(96-8-3));
@@ -181,7 +181,7 @@ public final class Sgln96 extends Sgln {
             sgln96.setEpc(epc);
             return sgln96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }

@@ -42,16 +42,16 @@ public final class Sgtin198 extends Sgtin {
         this.filter = SgtinFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (itemReference >= 1l<<getItemReferenceBits(partition))
-            throw new RuntimeException("Item Prefix too large, max value (exclusive):" + (1l<<getItemReferenceBits(partition)));
+            throw new IllegalArgumentException("Item Prefix too large, max value (exclusive):" + (1l<<getItemReferenceBits(partition)));
         this.itemReference = itemReference;
         if (serial.length() > serialMaxChars)
-            throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+            throw new IllegalArgumentException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
         for (char ch : serial.toCharArray())
             if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-                throw new RuntimeException("Invalid serial character");
+                throw new IllegalArgumentException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -65,7 +65,7 @@ public final class Sgtin198 extends Sgtin {
 
     public static Sgtin198 fromGs1Key(int filter,int companyPrefixDigits, String ai01, String ai21) {
         if (ai01.length()<14 || !StringUtils.isNumeric(ai01))
-            throw new RuntimeException("GTIN must be 14 digits long");
+            throw new IllegalArgumentException("GTIN must be 14 digits long");
 
         return new Sgtin198(filter, companyPrefixDigits, Long.parseLong(ai01.substring(1, companyPrefixDigits + 1)), Integer.parseInt(ai01.charAt(0) + ai01.substring(companyPrefixDigits + 1, 14 - 1)), ai21);
     }
@@ -147,7 +147,7 @@ public final class Sgtin198 extends Sgtin {
      */
     private String getUriSerialChar(char ch){
         if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-            throw new RuntimeException("Wrong char");
+            throw new IllegalArgumentException("Wrong char");
         switch (ch){
             case '"':
             case '%':
@@ -164,7 +164,7 @@ public final class Sgtin198 extends Sgtin {
 
     public static Sgtin198 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -205,7 +205,7 @@ public final class Sgtin198 extends Sgtin {
         for(tmp = 0, i = 208; (i = bs.previousSetBit(i-1)) > 208 - 8 - 1;)
             tmp+=1L<<(i-(208-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 208 - 8; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 1;)
             tmp+=1L<<(i-(208-8-3));
@@ -238,7 +238,7 @@ public final class Sgtin198 extends Sgtin {
             sgtin198.setEpc(epc);
             return sgtin198;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 

@@ -41,16 +41,16 @@ public final class Sgln195 extends Sgln {
         this.filter = SglnFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (locationReference >= 1l<<getLocationReferenceBits(partition))
-            throw new RuntimeException("Location Reference too large, max value (exclusive):" + (1l<<getLocationReferenceBits(partition)));
+            throw new IllegalArgumentException("Location Reference too large, max value (exclusive):" + (1l<<getLocationReferenceBits(partition)));
         this.locationReference = locationReference;
         if (extension.length() > extensionMaxChars)
-            throw new RuntimeException("Extension must at most " + extensionMaxChars + " alphanumeric characters long");
+            throw new IllegalArgumentException("Extension must at most " + extensionMaxChars + " alphanumeric characters long");
         for (char ch : extension.toCharArray())
             if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-                throw new RuntimeException("Invalid extension character");
+                throw new IllegalArgumentException("Invalid extension character");
         this.extension = extension;
     }
 
@@ -64,7 +64,7 @@ public final class Sgln195 extends Sgln {
 
     public static Sgln195 fromGs1Key(int filter,int companyPrefixDigits, String ai414, String ai254) {
         if (ai414.length()!=13 || !StringUtils.isNumeric(ai414))
-            throw new RuntimeException("GLN must be 13 digits long");
+            throw new IllegalArgumentException("GLN must be 13 digits long");
 
         return new Sgln195(filter, companyPrefixDigits, Long.parseLong(ai414.substring(0, companyPrefixDigits)), Integer.parseInt(ai414.substring(companyPrefixDigits, 13-1)), ai254);
     }
@@ -147,7 +147,7 @@ public final class Sgln195 extends Sgln {
      */
     private String getUriExtensionChar(char ch){
         if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-            throw new RuntimeException("Wrong char");
+            throw new IllegalArgumentException("Wrong char");
         switch (ch){
             case '"':
             case '%':
@@ -164,7 +164,7 @@ public final class Sgln195 extends Sgln {
 
     public static Sgln195 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -186,7 +186,7 @@ public final class Sgln195 extends Sgln {
             sgln195.setUri(uri);
             return sgln195;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 
@@ -209,7 +209,7 @@ public final class Sgln195 extends Sgln {
         for(tmp = 0, i = 208; (i = bs.previousSetBit(i-1)) > 208 - 8 - 1;)
             tmp+=1L<<(i-(208-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 208 - 8; (i = bs.previousSetBit(i-1)) > 208 - 8 - 3 - 1;)
             tmp+=1L<<(i-(208-8-3));

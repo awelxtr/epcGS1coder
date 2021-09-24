@@ -40,16 +40,16 @@ public final class Grai170 extends Grai{
         this.filter = GraiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (assetType >= 1l<<getAssetTypeBits(partition))
-            throw new RuntimeException("Asset Type too large, max value (exclusive):" + (1l<<getAssetTypeBits(partition)));
+            throw new IllegalArgumentException("Asset Type too large, max value (exclusive):" + (1l<<getAssetTypeBits(partition)));
         this.assetType = assetType;
         if (serial.length() > serialMaxChars)
-            throw new RuntimeException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
+            throw new IllegalArgumentException("Serial must at most " + serialMaxChars + " alphanumeric characters long");
         for (char ch : serial.toCharArray())
             if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-                throw new RuntimeException("Invalid serial character");
+                throw new IllegalArgumentException("Invalid serial character");
         this.serial = serial;
     }
 
@@ -63,7 +63,7 @@ public final class Grai170 extends Grai{
 
     public static Grai170 fromGs1Key(int filter,int companyPrefixDigits, String ai8003) {
         if (ai8003.length()!=14 || !StringUtils.isNumeric(ai8003.substring(0, 13)))
-            throw new RuntimeException("GRAI (must be numeric) with serial must be 14 digits long");
+            throw new IllegalArgumentException("GRAI (must be numeric) with serial must be 14 digits long");
 
         return new Grai170(filter, companyPrefixDigits, Long.parseLong(ai8003.substring(0, companyPrefixDigits)), Integer.parseInt(ai8003.substring(companyPrefixDigits, 13 - 1)), ai8003.substring(13));
     }
@@ -145,7 +145,7 @@ public final class Grai170 extends Grai{
      */
     private String getUriSerialChar(char ch){
         if (ch < 0x21 || ch > 0x7A || invalidTableA1Chars.contains(ch))
-            throw new RuntimeException("Wrong char");
+            throw new IllegalArgumentException("Wrong char");
         switch (ch){
             case '"':
             case '%':
@@ -162,7 +162,7 @@ public final class Grai170 extends Grai{
 
     public static Grai170 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -203,7 +203,7 @@ public final class Grai170 extends Grai{
         for(tmp = 0, i = 176; (i = bs.previousSetBit(i-1)) > 176 - 8 - 1;)
             tmp+=1L<<(i-(176-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 176 - 8; (i = bs.previousSetBit(i-1)) > 176 - 8 - 3 - 1;)
             tmp+=1L<<(i-(176-8-3));
@@ -237,7 +237,7 @@ public final class Grai170 extends Grai{
             grai170.setEpc(epc);
             return grai170;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }

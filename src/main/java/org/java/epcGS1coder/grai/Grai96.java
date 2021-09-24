@@ -36,13 +36,13 @@ public final class Grai96 extends Grai {
         this.filter = GraiFilter.values()[filter];
         this.partition = (byte) getPartition(companyPrefixDigits);
         if (companyPrefix >= 1l<<getCompanyPrefixBits(partition))
-            throw new RuntimeException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
+            throw new IllegalArgumentException("Company Prefix too large, max value (exclusive):" + (1l<<getCompanyPrefixBits(partition)));
         this.companyPrefix = companyPrefix;
         if (assetType >= 1l<<getAssetTypeBits(partition))
-            throw new RuntimeException("Asset Type too large, max value (exclusive):" + (1l<<getAssetTypeBits(partition)));
+            throw new IllegalArgumentException("Asset Type too large, max value (exclusive):" + (1l<<getAssetTypeBits(partition)));
         this.assetType = assetType;
         if (serial >= 1l<<serialSize)
-            throw new RuntimeException("Asset Type too large, max value (exclusive):" + (1l<<serialSize));
+            throw new IllegalArgumentException("Asset Type too large, max value (exclusive):" + (1l<<serialSize));
         this.serial = serial;
     }
 
@@ -131,14 +131,14 @@ public final class Grai96 extends Grai {
 
     public static Grai96 fromGs1Key(int filter,int companyPrefixDigits, String ai8003) {
         if (ai8003.length()!=14 || !StringUtils.isNumeric(ai8003))
-            throw new RuntimeException("GRAI with serial must be 14 digits long");
+            throw new IllegalArgumentException("GRAI with serial must be 14 digits long");
         return new Grai96(filter, companyPrefixDigits, Long.parseLong(ai8003.substring(0, companyPrefixDigits)), Integer.parseInt(ai8003.substring(companyPrefixDigits, 13 - 1)), Long.parseLong(ai8003.substring(13)));
     }
 
 
     public static Grai96 fromUri(String uri) {
         if (!uri.startsWith(uriHeader))
-            throw new RuntimeException("Decoding error: wrong URI header, expected " + uriHeader);
+            throw new IllegalArgumentException("Decoding error: wrong URI header, expected " + uriHeader);
 
         String uriParts[] = uri.substring(uriHeader.length()).split("\\.");
         int filter = Integer.parseInt(uriParts[0]);
@@ -172,7 +172,7 @@ public final class Grai96 extends Grai {
         for(tmp = 0, i = 96; (i = bs.previousSetBit(i-1)) > 96 - 8 - 1;)
             tmp+=1L<<(i-(96-8));
         if (tmp != epcHeader)
-            throw new RuntimeException("Invalid header"); //maybe the decoder could choose the structure from the header?
+            throw new IllegalArgumentException("Invalid header"); //maybe the decoder could choose the structure from the header?
 
         for(tmp = 0, i = 96 - 8; (i = bs.previousSetBit(i-1)) > 96 - 8 - 3 - 1;)
             tmp+=1L<<(i-(96-8-3));
@@ -202,7 +202,7 @@ public final class Grai96 extends Grai {
             grai96.setEpc(epc);
             return grai96;
         } catch (RuntimeException e){
-            throw new RuntimeException("Invalid EPC: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid EPC: " + e.getMessage());
         }
     }
 }
